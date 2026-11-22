@@ -2,7 +2,7 @@
 
 Everything here is pasted into App Store Connect by Brian and Cowork. No em dashes anywhere, no brand, store or bank names, no "Unlock", "Premium", "Seamless", "Effortless", "Welcome", "Let's" or exclamation marks.
 
-App record: bundle id com.bwk.cashcounter, SKU cashcounter, ASC app id 6838074076 (eas.json `ascAppId`). RevenueCat public iOS key in app.json `extra.revenueCatApiKeyIos`. Expo project bkdeveloper123/cashcounter: its id is still a marked placeholder in app.json `extra.eas.projectId`, for Cowork to fill before the first build.
+App record: bundle id com.bwk.cashcounter, SKU cashcounter, ASC app id 6838074076 (eas.json `ascAppId`). RevenueCat public iOS key in app.json `extra.revenueCatApiKeyIos`. Expo project bkdeveloper123/cashcounter (projectId 491bd6d2-de07-4673-9eb5-cf479f53edfc, app.json `extra.eas.projectId`).
 
 ## Name (28/30)
 Count Money: Cash Calculator

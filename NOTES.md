@@ -2,6 +2,8 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-22: 1.0.0 build 1, the last value from Cowork (same branch and PR, no merge, no EAS): app.json `extra.eas.projectId` is 491bd6d2-de07-4673-9eb5-cf479f53edfc (Expo project bkdeveloper123/cashcounter); owner bkdeveloper123 and slug cashcounter already matched. No placeholder is left anywhere in the repo; the placeholder test now checks that across the app, docs, store, notes, tests, workflows and plugins. Checked: `npx tsc --noEmit` clean, `npm test` 69 passing, `npx expo config --type introspect` shows the project id, owner and slug.
+
 - 2026-11-22: 1.0.0 build 1, the app icon (same branch and PR, no merge, no EAS).
   - Brian picked 2D-2: three matching mid green bills with white borders and markings, fanned, and a gold coin, on dark green (#0F4A2E). store/icon.js `CHOSEN = '2D-2'`, and `node store/icon.js` wrote assets/icon.png (1024x1024, RGB, no alpha, square corners), the Android adaptive foreground (the mark at 62% on the same green, inside the safe zone; app.json adaptive background now #0F4A2E), both splash icons, the favicon, docs/apple-touch-icon.png and docs/icon-512.png (the logo on the website pages, whose alt text now says what it shows). The three option sheets stay in docs/design. No app screen shows the icon, so no render in docs/design/after changed.
   - Checked: `npx tsc --noEmit` clean, `npm test` 69 passing (new: assets/icon.png decoded with Node's zlib is 1024x1024 RGB, both corners the tile's own green, the bills and the gold coin present; CHOSEN is '2D-2'; the adaptive background matches; the website alt text). The shipped files were looked at side by side.

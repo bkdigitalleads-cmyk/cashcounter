@@ -114,14 +114,20 @@ test('app.json: identity, iPhone only, no permissions, push entitlement plugin l
   assert.equal(eas.submit.production.ios.ascAppId, '6838074076');
 });
 
-test('placeholders: only the Expo project id is left, clearly marked, for Cowork to fill', () => {
-  const mark = new RegExp(['TODO', 'COWORK'].join('_'), 'g');
+test('placeholders: none left anywhere in the repo; the Expo project is bkdeveloper123/cashcounter', () => {
+  const mark = new RegExp(['TODO', 'COWORK'].join('_'));
   const app = JSON.parse(read('app.json')).expo;
-  assert.equal(app.extra.eas.projectId, `${['TODO', 'COWORK'].join('_')}_EAS_PROJECT_ID`);
-  const files = ['eas.json', 'package.json', 'App.tsx', 'index.ts', ...walk(`${ROOT}src`, ['.ts', '.tsx']).map((f) => f.slice(ROOT.length)), ...walk(`${ROOT}docs`, ['.html']).map((f) => f.slice(ROOT.length))];
-  const found = files.filter((f) => mark.test(read(f)));
-  assert.deepEqual(found, []);
-  // The Expo project is not in any workflow yet, so nothing builds by accident.
+  // Expo project bkdeveloper123/cashcounter, created Nov 22, 2026.
+  assert.equal(app.extra.eas.projectId, '491bd6d2-de07-4673-9eb5-cf479f53edfc');
+  assert.match(app.extra.eas.projectId, /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  assert.equal(app.owner, 'bkdeveloper123');
+  assert.equal(app.slug, 'cashcounter');
+  const files = [
+    'app.json', 'eas.json', 'package.json', 'App.tsx', 'index.ts', 'CLAUDE.md', 'AGENTS.md', 'NOTES.md', 'README.md',
+    ...[...walk(`${ROOT}src`, ['.ts', '.tsx']), ...walk(`${ROOT}docs`, ['.html', '.md', '.xml', '.txt']), ...walk(`${ROOT}store`, ['.md', '.js', '.mjs', '.py']), ...walk(`${ROOT}tests`, ['.mjs']), ...walk(`${ROOT}.eas`, ['.yml']), ...walk(`${ROOT}plugins`, ['.js'])].map((f) => f.slice(ROOT.length)),
+  ];
+  assert.deepEqual(files.filter((f) => mark.test(read(f))), []);
+  // Nothing builds from this branch: the workflow only runs on main.
   assert.match(read('.eas/workflows/deploy.yml'), /branches: \['main'\]/);
 });
 
