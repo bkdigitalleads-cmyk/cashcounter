@@ -62,3 +62,13 @@ Brian liked Stack best because it reads as money, and asked for it to read more 
 - 2D: green (#1E8A4F) with a fan of three green and white bills and one large gold coin, heavier lines and fewer parts, so it still reads at 60 px.
 
 The bill is the app's own: a framed oblong with a ring in the middle and four corner marks. No sign, no letters, no portrait, no real banknote or coin artwork. None is picked; assets/icon.png is still the blue stand-in.
+
+### 2D refined (icon-options-3.png, Nov 22)
+
+Brian likes 2D best and 2B second. In 2D the three bills were three colors; real bills in a fan are all the same green. `node icon.js options3` draws three variants in which all three bills match, set apart only by an outline and a thin shadow:
+
+- 2D-1: 2D's green tile (#1E8A4F), every bill a pale green face (#D3F0DC) with a dark green border and markings (#0F5A33).
+- 2D-2: every bill a stronger mid green (#2FA463) with white borders and markings, like a stack of real bills, on a darker green tile (#0F4A2E) so the bills stand out.
+- 2E: the 2D fan and gold coin on 2B's deep green (#0E3B28), with matching mint bills.
+
+At 60 px the first fan merged: each bill turned about its own middle, so the two behind showed only as thin stripes. The fan now opens from one shared point near the lower left corner, in 18 degree steps (-36, -18, 0), and the bills are larger. At 60 px the three top edges and the corner marks of the two back bills show, so it reads as three bills, not one shape. `node icon.js check60 out.png` blows the 60 px renders up 6x to check this. None is picked; assets/icon.png is unchanged.

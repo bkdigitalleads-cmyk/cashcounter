@@ -24,6 +24,14 @@ const fs = require('fs');
 //   2D - green tile, a fan of three green and white bills and one gold coin, bold and simple for 60 px
 // Same rules: no currency sign, no letters, no portraits or real banknote
 // or coin artwork, no camera.
+// `node icon.js options3` writes docs/design/icon-options-3.png: 2D refined
+// after Brian picked 2D first and 2B second (Nov 22). All three bills in the
+// fan now match, like real bills, set apart by an outline and a thin shadow:
+//   2D-1 - 2D's green tile, pale green bills with dark green borders and markings
+//   2D-2 - stronger mid green bills with white borders and markings, on a darker green
+//   2E   - the 2D fan and gold coin on 2B's deep green, with matching mint bills
+// `node icon.js check60 out.png` blows the 60 px renders up 6x, to check the
+// three bills still read as three.
 // `node icon.js` writes the shipped files (assets/icon.png, the splash
 // icons, the Android foreground, the favicon and the website icons) from
 // CHOSEN. Until Brian picks, CHOSEN is null and they are a plain stand-in
@@ -88,9 +96,11 @@ const GOLD = '#E6B53C';
 const GOLD_EDGE = '#9C6F0E';
 
 /** A bill in the app's own style: a framed oblong with a ring in the middle and four corner marks. No sign, no letters, no portrait. */
-function bill({ x, y, w, h, angle, fill, line, weight = 10 }) {
+function bill({ x, y, w, h, angle, fill, line, weight = 10, edge = null, edgeWidth = 0, shadow = null, pivot = null }) {
   const cx = x + w / 2;
   const cy = y + h / 2;
+  // Turns about its own middle, or about a shared pivot so a fan opens from one corner.
+  const [px, py] = pivot ?? [cx, cy];
   const m = Math.round(h * 0.11);
   const corner = Math.round(h * 0.13);
   const marks = [
@@ -101,8 +111,11 @@ function bill({ x, y, w, h, angle, fill, line, weight = 10 }) {
   ]
     .map(([mx, my]) => `<rect x="${mx}" y="${my}" width="${corner}" height="${corner}" rx="${corner / 3}" fill="${line}"/>`)
     .join('');
-  return `<g transform="rotate(${angle} ${cx} ${cy})">
-    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h * 0.09}" fill="${fill}"/>
+  // A thin shadow under the bill, offset down, so bills of one color still read as separate sheets.
+  const under = shadow ? `<rect x="${x + 4}" y="${y + 16}" width="${w}" height="${h}" rx="${h * 0.09}" fill="${shadow}" opacity="0.45"/>` : '';
+  return `<g transform="rotate(${angle} ${px} ${py})">
+    ${under}
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${h * 0.09}" fill="${fill}"${edge ? ` stroke="${edge}" stroke-width="${edgeWidth}"` : ''}/>
     <rect x="${x + m}" y="${y + m}" width="${w - 2 * m}" height="${h - 2 * m}" rx="${h * 0.05}" fill="none" stroke="${line}" stroke-width="${weight}"/>
     <circle cx="${cx}" cy="${cy}" r="${h * 0.22}" fill="none" stroke="${line}" stroke-width="${weight * 1.5}"/>
     ${marks}
@@ -139,6 +152,26 @@ const art2 = {
     ),
 };
 
+// ---------- 2D refined (options3): all three bills alike, like real bills ----------
+
+/** Three matching bills fanned from one corner, and one gold coin in front. `angles` sets how wide the fan opens. */
+function fan({ bg, face, line, edge, shadow, angles = [-36, -18, 0] }) {
+  // Every bill turns about the same point near its lower left corner, so the fan opens wide at the top right
+  // and the three top edges stay well apart at 60 px.
+  const sheets = angles.map((a) => bill({ x: 220, y: 360, w: 560, h: 330, angle: a, fill: face, line, weight: 18, edge, edgeWidth: 10, shadow, pivot: [280, 690] })).join('');
+  const coin = `<circle cx="798" cy="804" r="165" fill="${shadow}" opacity="0.45"/><circle cx="790" cy="790" r="165" fill="${GOLD}" stroke="${GOLD_EDGE}" stroke-width="24"/><circle cx="790" cy="790" r="106" fill="none" stroke="${GOLD_EDGE}" stroke-width="20"/>`;
+  return tile(bg, `<g transform="translate(0 -38)">${sheets}${coin}</g>`);
+}
+
+const art3 = {
+  // 2D's green, every bill the same pale green face with a dark green border and markings.
+  '2D-1': () => fan({ bg: '#1E8A4F', face: MINT, line: '#0F5A33', edge: '#0F5A33', shadow: '#073320' }),
+  // Bills a stronger mid green with white borders and markings, on a darker green so they stand out.
+  '2D-2': () => fan({ bg: '#0F4A2E', face: '#2FA463', line: WHITE, edge: '#E8F6EC', shadow: '#03190F' }),
+  // The 2D fan and coin on 2B's deep green, with matching mint bills.
+  '2E': () => fan({ bg: DEEP, face: MINT, line: '#2F7A50', edge: '#2F7A50', shadow: '#000000' }),
+};
+
 async function png(svg, size) {
   return sharp(Buffer.from(svg)).resize(size, size).png().toBuffer();
 }
@@ -168,32 +201,57 @@ async function options() {
   console.log('wrote docs/design/icon-options.png');
 }
 
-async function options2() {
-  const names = Object.keys(art2);
-  const W = 1580;
-  const H = 1060;
+/** A sheet of variants: each large, and at 60 px on a light and a dark wallpaper, with a short line under each name. */
+async function variantSheet(art, sub, lines, file) {
+  const names = Object.keys(art);
   const col = 380;
+  const W = 60 + names.length * col;
+  const H = 1060;
   const big = 320;
   const layers = [];
   for (const [i, n] of names.entries()) {
     const x = 50 + i * col;
-    const b = await sharp(await png(art2[n](), big)).composite([{ input: Buffer.from(`<svg width="${big}" height="${big}"><rect width="${big}" height="${big}" rx="${big * 0.225}" fill="#fff"/></svg>`), blend: 'dest-in' }]).png().toBuffer();
+    const b = await sharp(await png(art[n](), big)).composite([{ input: Buffer.from(`<svg width="${big}" height="${big}"><rect width="${big}" height="${big}" rx="${big * 0.225}" fill="#fff"/></svg>`), blend: 'dest-in' }]).png().toBuffer();
     layers.push({ input: b, left: x, top: 130 });
-    const small = await sharp(await png(art2[n](), 60)).composite([{ input: Buffer.from(`<svg width="60" height="60"><rect width="60" height="60" rx="13.5" fill="#fff"/></svg>`), blend: 'dest-in' }]).png().toBuffer();
+    const small = await sharp(await png(art[n](), 60)).composite([{ input: Buffer.from(`<svg width="60" height="60"><rect width="60" height="60" rx="13.5" fill="#fff"/></svg>`), blend: 'dest-in' }]).png().toBuffer();
     layers.push({ input: small, left: x + 45, top: 640 });
     layers.push({ input: small, left: x + 210, top: 640 });
   }
-  const sub = { '2A': 'Green, white', '2B': 'Deep green, mint, gold', '2C': 'Off-white, green, gold', '2D': 'Fan of bills, gold coin' };
   const base = `<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
     <rect width="${W}" height="${H}" fill="${STEEL}"/>
     ${names.map((n, i) => textPath(BOLD, n, 50 + i * col, 80, 50, INK) + textPath(BOLD, sub[n], 50 + i * col, 112, 24, '#434952')).join('')}
     ${names.map((_, i) => `<rect x="${50 + i * col}" y="585" width="150" height="170" rx="20" fill="#DCE6F2"/><rect x="${215 + i * col}" y="585" width="150" height="170" rx="20" fill="#11151B"/>`).join('')}
-    ${textPath(BOLD, 'Stack in green, four ways, at 60 px on a light and a dark wallpaper. None is picked: Brian picks.', 50, 840, 30, '#434952')}
-    ${textPath(BOLD, 'Green like money, but a bill and coins instead of a currency sign, so it stands apart', 50, 885, 30, '#434952')}
-    ${textPath(BOLD, 'from the green tiles with a sign. No letters, no portraits, no real banknote or coin artwork.', 50, 930, 30, '#434952')}
+    ${lines.map((l, i) => textPath(BOLD, l, 50, 840 + i * 45, 30, '#434952')).join('')}
   </svg>`;
-  await sharp(Buffer.from(base)).composite(layers).png().toFile(path.join(ROOT, 'docs/design/icon-options-2.png'));
-  console.log('wrote docs/design/icon-options-2.png');
+  await sharp(Buffer.from(base)).composite(layers).png().toFile(path.join(ROOT, file));
+  console.log(`wrote ${file}`);
+}
+
+function options2() {
+  return variantSheet(art2, { '2A': 'Green, white', '2B': 'Deep green, mint, gold', '2C': 'Off-white, green, gold', '2D': 'Fan of bills, gold coin' }, [
+    'Stack in green, four ways, at 60 px on a light and a dark wallpaper. None is picked: Brian picks.',
+    'Green like money, but a bill and coins instead of a currency sign, so it stands apart',
+    'from the green tiles with a sign. No letters, no portraits, no real banknote or coin artwork.',
+  ], 'docs/design/icon-options-2.png');
+}
+
+function options3() {
+  return variantSheet(art3, { '2D-1': 'Pale green bills, dark lines', '2D-2': 'Green bills, white lines', '2E': 'Deep green, mint bills' }, [
+    '2D refined: three matching bills, set apart',
+    'by an outline and a thin shadow, fanned wide',
+    'so they stay three at 60 px. None is picked.',
+    'No sign, no letters, no portraits.',
+  ], 'docs/design/icon-options-3.png');
+}
+
+/** 60 px renders blown up 6x with no smoothing, to check the three bills stay three (store/icon.js check60). */
+async function check60() {
+  const tiles = [];
+  for (const n of Object.keys(art3)) tiles.push(await sharp(await png(art3[n](), 60)).resize(360, 360, { kernel: 'nearest' }).png().toBuffer());
+  await sharp({ create: { width: tiles.length * 380, height: 360, channels: 3, background: '#888888' } })
+    .composite(tiles.map((t, i) => ({ input: t, left: i * 380, top: 0 })))
+    .png()
+    .toFile(process.argv[3] ?? 'check60.png');
 }
 
 /** The stand-in until Brian picks: a plain deposit-slip blue tile, no mark. */
@@ -216,9 +274,10 @@ async function shipped() {
   console.log(`wrote assets and website icons from ${CHOSEN ?? 'the stand-in tile'}`);
 }
 
-(process.argv[2] === 'options' ? options() : process.argv[2] === 'options2' ? options2() : shipped()).catch((e) => {
+const MODES = { options, options2, options3, check60 };
+(MODES[process.argv[2]] ?? shipped)().catch((e) => {
   console.error(e);
   process.exit(1);
 });
 
-module.exports = { CHOSEN, VARIANTS: Object.keys(art2) };
+module.exports = { CHOSEN, VARIANTS: [...Object.keys(art2), ...Object.keys(art3)] };

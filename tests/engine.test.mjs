@@ -255,13 +255,28 @@ test('icon options 2: four green variants of Stack, 2A to 2D, none picked, and t
   assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1580, 1060]);
   const icon = read('store/icon.js');
   for (const v of ['2A', '2B', '2C', '2D']) assert.match(icon, new RegExp(`'${v}': \\(\\) =>`), v);
-  assert.match(icon, /process\.argv\[2\] === 'options2' \? options2\(\)/);
+  assert.match(icon, /const MODES = \{ options, options2, options3, check60 \};/);
   const art = icon.slice(icon.indexOf('const art2 = {'), icon.indexOf('async function png('));
   assert.ok(!/textPath|<text/.test(art), 'no letters or signs drawn on the variants');
   assert.match(icon, /const CHOSEN = null;/);
   // The shipped icon is still the plain stand-in tile: one color, deposit-slip blue.
   const raw = readFileSync(`${ROOT}assets/icon.png`);
   assert.equal(raw[25], 2, 'RGB, no alpha');
+});
+
+test('icon options 3: 2D refined in three ways, the bills in each fan alike, none picked, the shipped icon untouched', () => {
+  const f = `${ROOT}docs/design/icon-options-3.png`;
+  assert.ok(existsSync(f));
+  const b = readFileSync(f);
+  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1200, 1060]);
+  const icon = read('store/icon.js');
+  for (const v of ['2D-1', '2D-2', '2E']) assert.match(icon, new RegExp(`'${v}': \\(\\) => fan\\(`), v);
+  // One face, one line color and one shared pivot for all three bills in a fan, opened in 18 degree steps.
+  const fan = icon.slice(icon.indexOf('function fan('), icon.indexOf('const art3 = {'));
+  assert.match(fan, /angles = \[-36, -18, 0\]/);
+  assert.match(fan, /angles\.map\(\(a\) => bill\(\{[^}]*fill: face, line,[^}]*pivot: \[280, 690\] \}\)\)/);
+  assert.ok(!/textPath|<text/.test(icon.slice(icon.indexOf('function fan('), icon.indexOf('async function png('))), 'nothing lettered on the variants');
+  assert.match(icon, /const CHOSEN = null;/);
 });
 
 test('the first-run screens are called Intro; the banned word does not appear in the code', () => {
