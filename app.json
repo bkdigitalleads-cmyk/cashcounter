@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "Cash Counter",
+    "slug": "cashcounter",
+    "scheme": "cashcounter",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#E9ECEF",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.bwk.cashcounter",
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationCategoryType": "public.app-category.business"
+      }
+    },
+    "android": {
+      "package": "com.bwk.cashcounter",
+      "adaptiveIcon": {
+        "backgroundColor": "#1E4FD8",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      "expo-sqlite",
+      "expo-localization",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 120,
+          "resizeMode": "contain",
+          "backgroundColor": "#E9ECEF",
+          "dark": {
+            "image": "./assets/splash-icon-dark.png",
+            "backgroundColor": "#0B0D10"
+          }
+        }
+      ],
+      "./plugins/withoutPushEntitlement"
+    ],
+    "extra": {
+      "revenueCatApiKeyIos": "appl_ceOFPmkMDeqJMhPczUWrOeZzcoa",
+      "eas": {
+        "projectId": "TODO_COWORK_EAS_PROJECT_ID"
+      }
+    },
+    "owner": "bkdeveloper123"
+  }
+}

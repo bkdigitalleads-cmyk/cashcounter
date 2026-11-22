@@ -1,0 +1,33 @@
+@font-face { font-family:"Barlow Tab"; src:url("fonts/BarlowTab-Bold.ttf") format("truetype"); font-weight:700; font-display:swap; }
+@font-face { font-family:"Barlow Tab"; src:url("fonts/BarlowTab-SemiBold.ttf") format("truetype"); font-weight:600; font-display:swap; }
+:root { --tray:#E9ECEF; --tile:#FFFFFF; --ink:#0C0E11; --soft:#434952; --faint:#757C86; --rule:#D6DAE0; --blue:#1E4FD8; --onblue:#FFFFFF; --flag:#A93C00; --wash:#FBEADF; }
+@media (prefers-color-scheme: dark) {
+  :root { --tray:#0B0D10; --tile:#171A1F; --ink:#F3F5F8; --soft:#B4BAC3; --faint:#858C96; --rule:#2A3038; --blue:#7EA3FF; --onblue:#06142E; --flag:#FFA45C; --wash:#33200F; }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--tray); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; line-height:1.6; font-size:17px; }
+.wrap { max-width:760px; margin:0 auto; padding:36px 20px 64px; }
+h1, h2, .brand, .label, .cta, .fig { font-family:"Barlow Tab",Helvetica,Arial,sans-serif; font-weight:700; }
+h1 { font-size:44px; line-height:1.06; margin:22px 0 10px; }
+h2 { font-size:28px; line-height:1.15; margin:40px 0 8px; }
+h3 { font-size:18px; margin:22px 0 4px; }
+p { margin:8px 0; }
+a { color:var(--ink); text-decoration-thickness:1.5px; text-underline-offset:3px; }
+.brand { display:flex; align-items:center; gap:10px; font-size:22px; color:var(--ink); text-decoration:none; }
+.brand img { border-radius:9px; }
+.tag { color:var(--soft); font-size:19px; }
+.cta { display:inline-block; background:var(--blue); color:var(--onblue); font-size:20px; padding:14px 28px; border-radius:14px; text-decoration:none; margin:16px 0 4px; }
+.small { color:var(--faint); font-size:14px; }
+.label { text-transform:uppercase; letter-spacing:.08em; font-size:13px; color:var(--soft); margin:40px 0 10px; }
+.rows { display:grid; gap:8px; }
+.rows div { background:var(--tile); border:1px solid var(--rule); border-radius:14px; padding:14px 16px; display:grid; grid-template-columns:72px 1fr; gap:12px; align-items:start; }
+.rows b { font-family:"Barlow Tab",Helvetica,sans-serif; font-weight:700; font-size:15px; border:1.5px solid var(--soft); border-radius:5px; padding:2px 0; text-align:center; }
+.diff { display:inline-block; background:var(--wash); color:var(--flag); border:1.5px solid var(--flag); border-radius:10px; padding:2px 12px; font-family:"Barlow Tab",sans-serif; font-weight:600; }
+.shots { display:flex; gap:12px; overflow-x:auto; margin:22px 0 6px; padding-bottom:8px; }
+.shots img { width:210px; height:auto; border-radius:24px; border:1px solid var(--rule); flex:none; }
+.sheet { max-width:360px; width:100%; height:auto; border:1px solid var(--rule); background:#fff; display:block; margin-top:14px; }
+details { background:var(--tile); border:1px solid var(--rule); border-radius:14px; padding:12px 16px; margin:8px 0; }
+summary { font-weight:600; cursor:pointer; }
+footer { margin-top:56px; padding-top:18px; border-top:1px solid var(--rule); color:var(--faint); font-size:14px; }
+footer a { margin-right:14px; color:var(--soft); }
+@media (max-width:560px) { h1 { font-size:36px; } }
