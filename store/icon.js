@@ -34,9 +34,10 @@ const fs = require('fs');
 // three bills still read as three.
 // `node icon.js` writes the shipped files (assets/icon.png, the splash
 // icons, the Android foreground, the favicon and the website icons) from
-// CHOSEN. Until Brian picks, CHOSEN is null and they are a plain stand-in
-// tile with no mark, so nothing looks decided.
-const CHOSEN = null;
+// CHOSEN. Brian picked 2D-2 on Nov 22, 2026: three matching mid green bills
+// with white borders and markings, fanned, and a gold coin, on dark green.
+// The option sheets stay in docs/design for the record.
+const CHOSEN = '2D-2';
 
 const ROOT = path.join(__dirname, '..');
 const BOLD = opentype.loadSync(`${ROOT}/assets/fonts/BarlowTab-Bold.ttf`);
@@ -257,12 +258,21 @@ async function check60() {
 /** The stand-in until Brian picks: a plain deposit-slip blue tile, no mark. */
 const standIn = () => `<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg"><rect width="1024" height="1024" fill="${BLUE}"/></svg>`;
 
+/** The background of the chosen tile: the flat fill behind the mark, used for the Android adaptive icon too. */
+const CHOSEN_BG = '#0F4A2E';
+
 async function shipped() {
-  const svg = CHOSEN ? art[CHOSEN]() : standIn();
-  const flat = (size) => sharp(Buffer.from(svg)).resize(size, size).flatten({ background: BLUE }).removeAlpha();
+  const all = { ...art, ...art2, ...art3 };
+  const svg = CHOSEN ? all[CHOSEN]() : standIn();
+  const bg = CHOSEN ? CHOSEN_BG : BLUE;
+  // The App Store icon: square corners (iOS rounds them), no alpha channel.
+  const flat = (size) => sharp(Buffer.from(svg)).resize(size, size).flatten({ background: bg }).removeAlpha();
   await flat(1024).png().toFile(path.join(ROOT, 'assets/icon.png'));
-  await flat(1024).png().toFile(path.join(ROOT, 'assets/android-icon-foreground.png'));
+  // Android adaptive foreground: the mark at 62% in the middle of the same green, inside the safe zone the launcher masks to.
+  const mark = await flat(636).png().toBuffer();
+  await sharp({ create: { width: 1024, height: 1024, channels: 3, background: bg } }).composite([{ input: mark, left: 194, top: 194 }]).png().toFile(path.join(ROOT, 'assets/android-icon-foreground.png'));
   await flat(48).png().toFile(path.join(ROOT, 'assets/favicon.png'));
+  // The splash and the website logo: the tile with the iOS-style rounded corners, on a clear background.
   const round = async (size) =>
     sharp(await png(svg, size))
       .composite([{ input: Buffer.from(`<svg width="${size}" height="${size}"><rect width="${size}" height="${size}" rx="${size * 0.225}" fill="#fff"/></svg>`), blend: 'dest-in' }])
@@ -280,4 +290,4 @@ const MODES = { options, options2, options3, check60 };
   process.exit(1);
 });
 
-module.exports = { CHOSEN, VARIANTS: [...Object.keys(art2), ...Object.keys(art3)] };
+module.exports = { CHOSEN, CHOSEN_BG, VARIANTS: [...Object.keys(art2), ...Object.keys(art3)] };

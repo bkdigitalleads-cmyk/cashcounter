@@ -44,7 +44,16 @@ From the top: CASH COUNT, the till, the count's name, the date and the time it w
 
 ## Icon
 
-Three concepts in `icon-options.png`, each large and at 60 px on a light and a dark wallpaper, drawn by `store/icon.js` (`node icon.js options`). None is picked: Brian picks, then `CHOSEN` in store/icon.js is set and `node icon.js` writes assets/ and the website icons. Until then those files are a plain blue stand-in tile with no mark.
+**Chosen (Nov 22, 2026): 2D-2.** Three matching mid green bills (#2FA463) with white borders and markings, fanned from one corner, and a gold coin in front, on a dark green tile (#0F4A2E). `CHOSEN = '2D-2'` in `store/icon.js`; `node store/icon.js` writes every shipped file from it:
+
+- `assets/icon.png`: 1024x1024, RGB with no alpha channel, square corners (iOS rounds them)
+- `assets/android-icon-foreground.png`: the mark at 62% in the middle of the same green, inside the adaptive icon's safe zone; app.json `android.adaptiveIcon.backgroundColor` is the same #0F4A2E
+- `assets/splash-icon.png` and `splash-icon-dark.png`: the tile with rounded corners, centred on the steel (light) or near-black (dark) splash
+- `assets/favicon.png`, `docs/apple-touch-icon.png` (180, square) and `docs/icon-512.png` (rounded), which is the logo on every website page
+
+No app screen draws the icon, so none of the renders in `after/` changed. The three option sheets below stay for the record.
+
+Three concepts in `icon-options.png`, each large and at 60 px on a light and a dark wallpaper, drawn by `store/icon.js` (`node icon.js options`). At the time none was picked and the shipped files were a plain blue stand-in tile; Brian then picked Stack, and from its green variants 2D-2 (above).
 
 1. Tray: a cash drawer insert seen from above, four note slots and five coin cups, on ink. The app's own concept; the strongest silhouette at 60 px on a light wallpaper.
 2. Stack: a framed note and a stack of coins on deposit-slip blue. Says "money counter" fastest; the most like what is already in the category.

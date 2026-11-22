@@ -2,6 +2,10 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-22: 1.0.0 build 1, the app icon (same branch and PR, no merge, no EAS).
+  - Brian picked 2D-2: three matching mid green bills with white borders and markings, fanned, and a gold coin, on dark green (#0F4A2E). store/icon.js `CHOSEN = '2D-2'`, and `node store/icon.js` wrote assets/icon.png (1024x1024, RGB, no alpha, square corners), the Android adaptive foreground (the mark at 62% on the same green, inside the safe zone; app.json adaptive background now #0F4A2E), both splash icons, the favicon, docs/apple-touch-icon.png and docs/icon-512.png (the logo on the website pages, whose alt text now says what it shows). The three option sheets stay in docs/design. No app screen shows the icon, so no render in docs/design/after changed.
+  - Checked: `npx tsc --noEmit` clean, `npm test` 69 passing (new: assets/icon.png decoded with Node's zlib is 1024x1024 RGB, both corners the tile's own green, the bills and the gold coin present; CHOSEN is '2D-2'; the adaptive background matches; the website alt text). The shipped files were looked at side by side.
+
 - 2026-11-22: 1.0.0 build 1, icon follow-up 2 (same branch and PR, no merge, no EAS).
   - Brian likes 2D best and 2B second, and expects the bills in the fan to be one green, like real bills. New sheet docs/design/icon-options-3.png (`node store/icon.js options3`), each variant large and at 60 px on a light and a dark wallpaper: 2D-1, 2D's green with matching pale green bills, dark green borders and markings; 2D-2, matching mid green bills with white borders and markings on a darker green; 2E, the fan and gold coin on 2B's deep green with matching mint bills. The bills are set apart only by an outline and a thin shadow.
   - 60 px check: the first try merged (each bill turned about its own middle, so the back two showed as thin stripes). The fan now opens from one shared point in 18 degree steps and the bills are larger; at 60 px the three top edges and the back bills' corner marks show. `node store/icon.js check60 out.png` makes the 6x blow-up used to check it.

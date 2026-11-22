@@ -4,6 +4,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { inflateSync } from 'node:zlib';
 
 const O = await import('../src/offer.ts');
 
@@ -17,6 +18,37 @@ function walk(dir, ext) {
     if (f === 'node_modules') return [];
     return statSync(p).isDirectory() ? walk(p, ext) : ext.some((e) => p.endsWith(e)) ? [p] : [];
   });
+}
+
+/** An 8-bit RGB PNG, decoded with Node's zlib (no image library), for checking the shipped icon. */
+function decodeRgbPng(buf) {
+  const width = buf.readUInt32BE(16);
+  const height = buf.readUInt32BE(20);
+  assert.equal(buf[24], 8);
+  assert.equal(buf[25], 2);
+  const parts = [];
+  for (let at = 8; at < buf.length; ) {
+    const len = buf.readUInt32BE(at);
+    if (buf.toString('latin1', at + 4, at + 8) === 'IDAT') parts.push(buf.subarray(at + 8, at + 8 + len));
+    at += 12 + len;
+  }
+  const data = inflateSync(Buffer.concat(parts));
+  const stride = width * 3;
+  const rgb = new Uint8Array(stride * height);
+  for (let y = 0; y < height; y++) {
+    const f = data[y * (stride + 1)];
+    for (let x = 0; x < stride; x++) {
+      const v = data[y * (stride + 1) + 1 + x];
+      const a = x >= 3 ? rgb[y * stride + x - 3] : 0;
+      const b = y > 0 ? rgb[(y - 1) * stride + x] : 0;
+      const c = x >= 3 && y > 0 ? rgb[(y - 1) * stride + x - 3] : 0;
+      const p = a + b - c;
+      const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
+      const pred = f === 0 ? 0 : f === 1 ? a : f === 2 ? b : f === 3 ? (a + b) >> 1 : pa <= pb && pa <= pc ? a : pb <= pc ? b : c;
+      rgb[y * stride + x] = (v + pred) & 255;
+    }
+  }
+  return { width, height, rgb };
 }
 
 // ---------- trial and plans (engine copy) ----------
@@ -245,10 +277,10 @@ test('design renders: the screens the brief asks for, at 393x852 points', () => 
     }
   }
   assert.ok(existsSync(`${ROOT}docs/design/icon-options.png`));
-  assert.match(read('store/icon.js'), /const CHOSEN = null;/, 'no icon picked; Brian picks');
+  assert.match(read('store/icon.js'), /const CHOSEN = '2D-2';/, 'Brian picked 2D-2');
 });
 
-test('icon options 2: four green variants of Stack, 2A to 2D, none picked, and the shipped icon untouched', () => {
+test('icon options 2: four green variants of Stack, 2A to 2D, kept for the record', () => {
   const f = `${ROOT}docs/design/icon-options-2.png`;
   assert.ok(existsSync(f));
   const b = readFileSync(f);
@@ -258,13 +290,10 @@ test('icon options 2: four green variants of Stack, 2A to 2D, none picked, and t
   assert.match(icon, /const MODES = \{ options, options2, options3, check60 \};/);
   const art = icon.slice(icon.indexOf('const art2 = {'), icon.indexOf('async function png('));
   assert.ok(!/textPath|<text/.test(art), 'no letters or signs drawn on the variants');
-  assert.match(icon, /const CHOSEN = null;/);
-  // The shipped icon is still the plain stand-in tile: one color, deposit-slip blue.
-  const raw = readFileSync(`${ROOT}assets/icon.png`);
-  assert.equal(raw[25], 2, 'RGB, no alpha');
+  assert.match(icon, /const CHOSEN = '2D-2';/);
 });
 
-test('icon options 3: 2D refined in three ways, the bills in each fan alike, none picked, the shipped icon untouched', () => {
+test('icon options 3: 2D refined in three ways, the bills in each fan alike, kept for the record', () => {
   const f = `${ROOT}docs/design/icon-options-3.png`;
   assert.ok(existsSync(f));
   const b = readFileSync(f);
@@ -276,7 +305,34 @@ test('icon options 3: 2D refined in three ways, the bills in each fan alike, non
   assert.match(fan, /angles = \[-36, -18, 0\]/);
   assert.match(fan, /angles\.map\(\(a\) => bill\(\{[^}]*fill: face, line,[^}]*pivot: \[280, 690\] \}\)\)/);
   assert.ok(!/textPath|<text/.test(icon.slice(icon.indexOf('function fan('), icon.indexOf('async function png('))), 'nothing lettered on the variants');
-  assert.match(icon, /const CHOSEN = null;/);
+  assert.match(icon, /const CHOSEN = '2D-2';/);
+});
+
+test('the app icon is 2D-2 everywhere: 1024 RGB with no alpha and square corners, drawn from store/icon.js', () => {
+  const raw = readFileSync(`${ROOT}assets/icon.png`);
+  assert.deepEqual([raw.readUInt32BE(16), raw.readUInt32BE(20)], [1024, 1024]);
+  assert.equal(raw[24], 8, '8 bits per channel');
+  assert.equal(raw[25], 2, 'color type 2: RGB, no alpha');
+  const app = JSON.parse(read('app.json')).expo;
+  assert.equal(app.icon, './assets/icon.png');
+  assert.equal(app.android.adaptiveIcon.backgroundColor, '#0F4A2E', 'the adaptive icon sits on the same dark green');
+  assert.match(read('store/icon.js'), /const CHOSEN_BG = '#0F4A2E';/);
+  assert.match(read('store/icon.js'), /'2D-2': \(\) => fan\(\{ bg: '#0F4A2E'/);
+  // Square corners: the corner pixel is the tile's own green, not cut away; and the mark is there (not one flat color).
+  const { width, height, rgb } = decodeRgbPng(raw);
+  assert.deepEqual([width, height], [1024, 1024]);
+  assert.deepEqual([...rgb.slice(0, 3)], [0x0f, 0x4a, 0x2e], 'top left corner');
+  const last = (width * height - 1) * 3;
+  assert.deepEqual([...rgb.slice(last, last + 3)], [0x0f, 0x4a, 0x2e], 'bottom right corner');
+  const colors = new Set();
+  for (let i = 0; i < rgb.length; i += 3 * 101) colors.add(`${rgb[i]},${rgb[i + 1]},${rgb[i + 2]}`);
+  assert.ok(colors.size > 20, `the bills and coin are drawn (${colors.size} colors sampled)`);
+  const gold = [...colors].some((c) => {
+    const [r, g, b] = c.split(',').map(Number);
+    return r > 200 && g > 150 && b < 100;
+  });
+  assert.ok(gold, 'the gold coin is there');
+  for (const f of ['index.html', 'privacy.html', 'support.html']) assert.match(read(`docs/${f}`), /src="icon-512\.png"[^>]*alt="Cash Counter app icon: three green bills fanned out and a gold coin, on dark green"/);
 });
 
 test('the first-run screens are called Intro; the banned word does not appear in the code', () => {

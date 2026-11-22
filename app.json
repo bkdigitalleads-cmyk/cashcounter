@@ -20,7 +20,7 @@
     "android": {
       "package": "com.bwk.cashcounter",
       "adaptiveIcon": {
-        "backgroundColor": "#1E4FD8",
+        "backgroundColor": "#0F4A2E",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
