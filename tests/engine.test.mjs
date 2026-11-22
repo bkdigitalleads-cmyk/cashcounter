@@ -108,7 +108,7 @@ test('copy: no em dashes, exclamation marks, banned words or brand names in the 
     if (f.endsWith('metadata.md')) s = s.split('\n').slice(3).join('\n'); // the line that names the rule
     if (/\.(ts|tsx)$/.test(f)) s = (s.match(/'[^'\n]*'|"[^"\n]*"|`[^`]*`|>[^<>{}]+</g) ?? []).filter((t) => !/^'\.\.?\//.test(t) && !/^'(react|expo|@)/.test(t)).join('\n');
     assert.ok(!s.includes('—'), `em dash in ${f}`);
-    for (const w of [/\bunlock/i, /\bpremium\b/i, /\bseamless/i, /\beffortless/i, /\bwelcome\b/i, /\blet's\b/i, /\blet’s\b/i]) assert.equal(s.match(w), null, `${w} in ${f}`);
+    for (const w of [/\bunlock/i, /\bpremium\b/i, /\bseamless/i, /\beffortless/i, new RegExp(`\\b${['wel', 'come'].join('')}\\b`, 'i'), /\blet's\b/i, /\blet’s\b/i]) assert.equal(s.match(w), null, `${w} in ${f}`);
   }
   for (const f of [...walk(`${ROOT}src`, ['.tsx']), `${ROOT}App.tsx`]) {
     const strings = readFileSync(f, 'utf8').match(/'[^'\n]*'|"[^"\n]*"|`[^`\n]*`|>[^<>{}\n]+</g) ?? [];
@@ -139,7 +139,7 @@ test('review safety: a calculator and a record, never a camera scan, and no fina
 
 test('onboarding: three value screens, "What are you counting?", then the trial, the reminder and the paywall', () => {
   const app = read('App.tsx');
-  const order = ["step === 'intro' && <Welcome onDone={() => setStep('what')}", "step === 'what' && (", "setStep('trial')", '<TrialSteps onDone={openOnboardingPaywall}', '<PaywallModal privacyUrl={PRIVACY_URL} onboarding />'];
+  const order = ["step === 'intro' && <Intro onDone={() => setStep('what')}", "step === 'what' && (", "setStep('trial')", '<TrialSteps onDone={openOnboardingPaywall}', '<PaywallModal privacyUrl={PRIVACY_URL} onboarding />'];
   let at = -1;
   for (const o of order) {
     const i = app.indexOf(o, at + 1);
@@ -147,7 +147,7 @@ test('onboarding: three value screens, "What are you counting?", then the trial,
     at = i;
   }
   assert.match(app, /data\.saveTill\(\{ \.\.\.first, name: tillNameFor\(choice\) \}\)/, 'the answer only names the first till');
-  const w = read('src/screens/Welcome.tsx');
+  const w = read('src/screens/Intro.tsx');
   assert.deepEqual(
     [...w.matchAll(/title: '([^']+)', line: '[^']+', show: '(count|diff|sheet)'/g)].map((m) => m[1]),
     ['Count a till in under a minute.', 'See at once if it is over or short.', 'Keep a record you can print.']
@@ -246,4 +246,28 @@ test('design renders: the screens the brief asks for, at 393x852 points', () => 
   }
   assert.ok(existsSync(`${ROOT}docs/design/icon-options.png`));
   assert.match(read('store/icon.js'), /const CHOSEN = null;/, 'no icon picked; Brian picks');
+});
+
+test('icon options 2: four green variants of Stack, 2A to 2D, none picked, and the shipped icon untouched', () => {
+  const f = `${ROOT}docs/design/icon-options-2.png`;
+  assert.ok(existsSync(f));
+  const b = readFileSync(f);
+  assert.deepEqual([b.readUInt32BE(16), b.readUInt32BE(20)], [1580, 1060]);
+  const icon = read('store/icon.js');
+  for (const v of ['2A', '2B', '2C', '2D']) assert.match(icon, new RegExp(`'${v}': \\(\\) =>`), v);
+  assert.match(icon, /process\.argv\[2\] === 'options2' \? options2\(\)/);
+  const art = icon.slice(icon.indexOf('const art2 = {'), icon.indexOf('async function png('));
+  assert.ok(!/textPath|<text/.test(art), 'no letters or signs drawn on the variants');
+  assert.match(icon, /const CHOSEN = null;/);
+  // The shipped icon is still the plain stand-in tile: one color, deposit-slip blue.
+  const raw = readFileSync(`${ROOT}assets/icon.png`);
+  assert.equal(raw[25], 2, 'RGB, no alpha');
+});
+
+test('the first-run screens are called Intro; the banned word does not appear in the code', () => {
+  assert.ok(existsSync(`${ROOT}src/screens/Intro.tsx`));
+  assert.ok(!existsSync(`${ROOT}src/screens/${['Wel', 'come'].join('')}.tsx`));
+  assert.match(read('src/screens/Intro.tsx'), /export default function Intro\(/);
+  const word = new RegExp(['wel', 'come'].join(''), 'i');
+  for (const f of [...walk(`${ROOT}src`, ['.ts', '.tsx']), `${ROOT}App.tsx`, `${ROOT}index.ts`, ...walk(`${ROOT}tests`, ['.mjs']), ...walk(`${ROOT}store`, ['.js', '.mjs', '.py'])]) assert.equal(readFileSync(f, 'utf8').match(word), null, f);
 });

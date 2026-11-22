@@ -23,7 +23,7 @@ import Tills from './src/screens/Tills';
 import Rows from './src/screens/Rows';
 import Settings from './src/screens/Settings';
 import PaywallModal from './src/screens/Paywall';
-import Welcome, { TrialSteps, WhatCounting } from './src/screens/Welcome';
+import Intro, { TrialSteps, WhatCounting } from './src/screens/Intro';
 import TabBar, { Tab } from './src/ui/TabBar';
 import { Heading, MainButton, Sheet, Toast } from './src/ui/Kit';
 import { savedHaptic } from './src/ui/motion';
@@ -125,7 +125,7 @@ function Shell() {
     return (
       <View style={{ flex: 1, backgroundColor: theme.bg, paddingTop: insets.top }}>
         <StatusBar style={theme.isDark ? 'light' : 'dark'} />
-        {step === 'intro' && <Welcome onDone={() => setStep('what')} />}
+        {step === 'intro' && <Intro onDone={() => setStep('what')} />}
         {step === 'what' && (
           <WhatCounting
             onDone={async (choice) => {

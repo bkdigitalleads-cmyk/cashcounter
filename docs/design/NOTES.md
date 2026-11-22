@@ -33,7 +33,7 @@ Nothing here is Estimate Maker's: no manila, no ledger lines, no orange, no IBM 
 10. `10-paywall-onboarding`: the onboarding paywall after the trial screens, close button showing (it appears after 3 seconds)
 11. `11-paywall-in-app`: the in-app paywall from History ("Keep every count.")
 12. `12-settings`: Settings
-13. `13` to `16`: onboarding: the three value screens and "What are you counting?"
+13. `13` to `16`: onboarding (src/screens/Intro.tsx): the three value screens and "What are you counting?"
 14. `17-trial`: the trial explainer; `18-roll`: the long-press sheet with Add a roll; `19-saved-count`: a saved count; `20-tills`: two tills; `21-after-save`: a count just saved
 
 ## The count sheet
@@ -51,3 +51,14 @@ Three concepts in `icon-options.png`, each large and at 60 px on a light and a d
 3. Counter: a framed note over a minus and an amber plus, on ink. Says "you count it yourself", which is the point, and keeps the app's two colors.
 
 No currency sign (the app counts six currencies), no real banknote or coin artwork, no camera or scanner.
+
+### Stack in green (icon-options-2.png, Nov 22)
+
+Brian liked Stack best because it reads as money, and asked for it to read more like money, in green. Three of the top six icons in the search results for "cash counter" are green tiles with a dollar sign, so these four are green but carry a bill and coins, not a sign. `node icon.js options2` draws them, each large and at 60 px on a light and a dark wallpaper:
+
+- 2A: rich banknote green (#1F7A4D) with the bill and the coin stack in white. Stack recolored.
+- 2B: deep dark green (#0E3B28) with a pale mint bill and a gold coin stack. The most contrast on a light wallpaper; the gold carries at 60 px.
+- 2C: off-white (#F6F3EA) with a green bill and a gold coin stack. Stands out from every green tile in the results, but fades on a light wallpaper.
+- 2D: green (#1E8A4F) with a fan of three green and white bills and one large gold coin, heavier lines and fewer parts, so it still reads at 60 px.
+
+The bill is the app's own: a framed oblong with a ring in the middle and four corner marks. No sign, no letters, no portrait, no real banknote or coin artwork. None is picked; assets/icon.png is still the blue stand-in.

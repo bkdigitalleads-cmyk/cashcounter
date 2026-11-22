@@ -56,7 +56,7 @@ function trialOffer(): Promise<TrialOffer | null> {
   return offerPromise;
 }
 
-export default function Welcome({ onDone }: { onDone: () => void }) {
+export default function Intro({ onDone }: { onDone: () => void }) {
   const theme = useTheme();
   const [step, setStep] = useState(0);
   useEffect(() => {
