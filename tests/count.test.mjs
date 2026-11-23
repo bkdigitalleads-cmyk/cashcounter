@@ -129,6 +129,13 @@ test('rolls, bags and straps at the standard counts', () => {
   // Pound bags by value: 1p and 2p £1, 5p and 10p £5, 20p and 50p £10, £1 and £2 £20.
   assert.deepEqual(['c1', 'c2', 'c5', 'c10', 'c20', 'c50', 'c100', 'c200'].map((id) => d('GBP', id).pack * d('GBP', id).value), [100, 100, 500, 500, 1000, 1000, 2000, 2000]);
   assert.equal(C.packWord('GBP', d('GBP', 'c50')), 'bag');
+  // Pound note bands per denomination, from the UK bank paying-in guides: £5 and £10 in 100s, £20 and £50 in 50s.
+  assert.deepEqual(['n500', 'n1000', 'n2000', 'n5000'].map((id) => d('GBP', id).pack), [100, 100, 50, 50]);
+  assert.deepEqual(['n500', 'n1000', 'n2000', 'n5000'].map((id) => d('GBP', id).pack * d('GBP', id).value), [50000, 100000, 100000, 250000], '£500, £1,000, £1,000, £2,500');
+  assert.equal(C.packWord('GBP', d('GBP', 'n2000')), 'strap');
+  assert.equal(K.countTotals('GBP', { n500: K.addPack(0, d('GBP', 'n500')) }).total, 50000, 'a band of fives is £500');
+  // Every other currency still bands its notes in 100s.
+  for (const cur of ['USD', 'CAD', 'EUR', 'AUD', 'MXN']) for (const n of C.CURRENCIES[cur].denominations.filter((x) => x.kind === 'note')) assert.equal(n.pack, 100, `${cur} ${n.id}`);
   assert.equal(C.packWord('USD', d('USD', 'c25')), 'roll');
   assert.equal(C.packWord('USD', d('USD', 'n100')), 'strap');
   // Australia: 5c $2, 10c $4, 20c $4, 50c $10, $1 $20, $2 $50.

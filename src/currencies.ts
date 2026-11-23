@@ -12,12 +12,18 @@
  *  - Euro: rolls of 50 (1, 2 and 5 cent), 40 (10, 20 and 50 cent),
  *    25 (1 and 2 euro); straps of 100 notes.
  *  - Pound: bank bags by value (1p and 2p £1, 5p and 10p £5, 20p and 50p
- *    £10, £1 and £2 £20); straps of 50 notes.
+ *    £10, £1 and £2 £20); note bands per denomination: £5 and £10 notes
+ *    in 100s (£500 and £1,000), £20 and £50 notes in 50s (£1,000 and
+ *    £2,500). Source: the UK bank paying-in guides (NatWest and RBS
+ *    publish the same table), checked by Brian on Nov 23, 2026; the bags
+ *    match the same guides.
  *  - Australian dollar: rolls of 5c $2, 10c $4, 20c $4, 50c $10, $1 $20,
  *    $2 $50; straps of 100 notes.
  *  - Mexican peso: straps (fajillas) of 100 notes. No coin roll is offered:
  *    there is no single wrapping count used everywhere.
- * Brian checks these against a local bank before launch (NOTES.md).
+ * Each note and coin carries its own count (`pack`), so a currency can
+ * band its notes differently, as the pound does. Brian checks the rest
+ * against a local bank before launch (NOTES.md).
  */
 
 export type CurrencyCode = 'USD' | 'CAD' | 'EUR' | 'GBP' | 'AUD' | 'MXN';
@@ -118,8 +124,8 @@ export const CURRENCIES: Record<CurrencyCode, Currency> = {
     denominations: [
       note(5000, '£50', '£50 notes', 50),
       note(2000, '£20', '£20 notes', 50),
-      note(1000, '£10', '£10 notes', 50),
-      note(500, '£5', '£5 notes', 50),
+      note(1000, '£10', '£10 notes', 100),
+      note(500, '£5', '£5 notes', 100),
       coin(200, '£2', '£2 coins', 10),
       coin(100, '£1', '£1 coins', 20),
       coin(50, '50p', '50p coins', 20),

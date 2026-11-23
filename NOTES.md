@@ -2,6 +2,10 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-23: 1.0.0 build 1, pound note bands (same branch and PR, no merge, no EAS).
+  - Brian checked the strap counts against the UK bank paying-in guides (NatWest and RBS publish the same table): pound notes are banded per denomination, not all in 50s. £5 notes 100 per band (£500), £10 notes 100 (£1,000), £20 notes 50 (£1,000), £50 notes 50 (£2,500). src/currencies.ts now has £5 and £10 at 100; £20 and £50 stay at 50. The count per note and coin was already its own field (`pack`), so only the data and the comment changed. The coin bags (1p and 2p £1, 5p and 10p £5, 20p and 50p £10, £1 and £2 £20) match the same guides and are unchanged, as are the US, Canadian, euro, Australian and Mexican counts.
+  - Checked: `npx tsc --noEmit` clean, `npm test` 69 passing (the rolls and straps check now asserts each pound band and its value, a band of fives totals £500, and every other currency's notes stay at 100).
+
 - 2026-11-22: 1.0.0 build 1, the last value from Cowork (same branch and PR, no merge, no EAS): app.json `extra.eas.projectId` is 491bd6d2-de07-4673-9eb5-cf479f53edfc (Expo project bkdeveloper123/cashcounter); owner bkdeveloper123 and slug cashcounter already matched. No placeholder is left anywhere in the repo; the placeholder test now checks that across the app, docs, store, notes, tests, workflows and plugins. Checked: `npx tsc --noEmit` clean, `npm test` 69 passing, `npx expo config --type introspect` shows the project id, owner and slug.
 
 - 2026-11-22: 1.0.0 build 1, the app icon (same branch and PR, no merge, no EAS).
@@ -53,7 +57,7 @@ Newest first. One entry per commit: date, version/build, what changed and why, a
 
 ## Noticed, not changed
 
-- The roll, bag and strap counts in src/currencies.ts are the usual bank wrappings as I know them; check them with a local bank before launch, especially the 50-note pound strap, the Australian rolls and the US half-dollar and dollar-coin rolls. Mexico has no coin roll offered, since I could not settle on one count used everywhere.
+- The roll, bag and strap counts in src/currencies.ts are the usual bank wrappings as I know them; check them with a local bank before launch, especially the Australian rolls and the US half-dollar and dollar-coin rolls. The pound counts were checked against the UK bank paying-in guides on Nov 23 (bands fixed per denomination; bags confirmed). Mexico has no coin roll offered, since I could not settle on one count used everywhere.
 - The Spanish keywords include "caja", which is already in the Spanish subtitle, so it adds nothing there; swapping it frees 4 characters. Kept as briefed.
 - The rating ask fires once ever (the engine's rule), on the first later-day save. The brief says "at most one per launch"; once ever is stricter. Say if it should ask again on later launches.
 - On the free plan the paywall opens on every save after the third, not only the fourth. Each save still goes through.
