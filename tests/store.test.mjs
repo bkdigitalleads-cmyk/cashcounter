@@ -4,7 +4,7 @@
 // listing never suggests the camera scans money.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 
 const ROOT = new URL('..', import.meta.url).pathname;
 const meta = readFileSync(`${ROOT}store/metadata.md`, 'utf8');
@@ -33,7 +33,10 @@ test('Spanish (Mexico) listing with its own name, subtitle and keywords', () => 
   assert.match(es, /Name \(28\/30\): Contador de Dinero: Efectivo\n/);
   assert.match(es, /Subtitle \(29\/30\): Calculadora de caja y monedas\n/);
   const kw = es.match(/Keywords \((\d+)\/100\): (\S+)/);
-  assert.equal(kw[2], 'contar,billetes,arqueo,cierre,caja,registradora,deposito,banco,cambio,propinas,total,diario,tienda');
+  assert.equal(kw[2], 'contar,billetes,arqueo,cierre,conteo,registradora,deposito,banco,cambio,propinas,total,diario,tienda');
+  assert.ok(!kw[2].split(',').includes('caja'), 'caja is already in the subtitle');
+  assert.match(es, /Description \(es-MX\): a Spanish translation of the English description, entered in App Store Connect on Nov 22, 2026\. The app's own text is in English/);
+  assert.ok(!/Brian decides/.test(es));
   assert.equal(kw[2].length, Number(kw[1]));
   assert.ok(kw[2].length <= 100);
 });
@@ -56,7 +59,8 @@ test('description leads with outcomes and states the limits; the review note cov
   assert.match(first, /under a minute/);
   assert.match(first, /over or short/);
   assert.match(first, /count sheet/);
-  assert.match(d, /Works in airplane mode; nothing leaves your iPhone/);
+  assert.match(d, /Works in airplane mode; your counts stay on your iPhone unless you send them/);
+  assert.ok(!/nothing leaves/i.test(meta), "no overclaim: a Pro purchase record goes to Apple and RevenueCat");
   assert.match(d, /does not use the camera and does not scan money/);
   assert.match(d, /not accounting or tax software, and gives no financial advice/);
   const note = section('App Review note');
@@ -108,4 +112,36 @@ test('app icon files: 1024x1024 with no alpha, splash, favicon and website icons
   assert.deepEqual(pngSize(`${ROOT}assets/icon.png`), [1024, 1024]);
   assert.equal(b[25], 2, 'color type 2: RGB, no alpha');
   for (const [f, w] of [['assets/splash-icon.png', 512], ['assets/splash-icon-dark.png', 512], ['assets/favicon.png', 48], ['assets/android-icon-foreground.png', 1024], ['docs/icon-512.png', 512], ['docs/apple-touch-icon.png', 180]]) assert.deepEqual(pngSize(`${ROOT}${f}`), [w, w], f);
+});
+
+function pngInfo(file) {
+  const b = readFileSync(file);
+  // Color type 2 is RGB with no alpha; 6 would be RGBA. An iCCP chunk carries the sRGB profile.
+  return { width: b.readUInt32BE(16), height: b.readUInt32BE(20), depth: b[24], colorType: b[25], icc: b.includes(Buffer.from('iCCP')) };
+}
+
+test('store screenshots: six at 1320x2868 and six at 1206x2622, and the paywall alone at 1179x2556, all RGB with no alpha and an sRGB profile', () => {
+  const dir = `${ROOT}store/screenshots`;
+  const want = [
+    ...[1, 2, 3, 4, 5, 6].map((n) => [`67-${n}.png`, 1320, 2868]),
+    ...[1, 2, 3, 4, 5, 6].map((n) => [`61-${n}.png`, 1206, 2622]),
+    ['paywall-review.png', 1179, 2556],
+  ];
+  for (const [f, w, h] of want) {
+    const p = pngInfo(`${dir}/${f}`);
+    assert.deepEqual([p.width, p.height], [w, h], f);
+    assert.equal(p.depth, 8, f);
+    assert.equal(p.colorType, 2, `${f}: RGB, no alpha`);
+    assert.ok(p.icc, `${f}: sRGB profile`);
+  }
+  assert.deepEqual(readdirSync(dir).filter((f) => f.endsWith('.png')).sort(), want.map((x) => x[0]).sort());
+  // Sources are 4x renders (3x for the paywall), so nothing is upscaled.
+  for (const f of ['count', 'difference', 'sheet', 'history', 'deposit', 'count-dark']) assert.deepEqual([pngInfo(`${ROOT}store/screens/${f}.png`).width, pngInfo(`${ROOT}store/screens/${f}.png`).height], [1572, 3408], f);
+  assert.deepEqual([pngInfo(`${ROOT}store/screens/paywall.png`).width, pngInfo(`${ROOT}store/screens/paywall.png`).height], [1179, 2556]);
+  const js = readFileSync(`${ROOT}store/screenshots.js`, 'utf8');
+  assert.match(js, /would be upscaled/);
+  for (const c of ['Count Money Fast', 'Over or Short at a Glance', 'Print a Count Sheet', 'Every Close in History', 'Know What to Bank', 'Private and Offline']) {
+    assert.ok(js.includes(`caption: '${c}'`), c);
+    assert.ok(meta.includes(`"${c}"`), `${c} is in the plan`);
+  }
 });

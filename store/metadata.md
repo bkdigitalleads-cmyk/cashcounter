@@ -20,13 +20,11 @@ Rule: no word from the name or the subtitle (count, money, cash, calculator, coi
 ## Spanish (Mexico) listing
 Name (28/30): Contador de Dinero: Efectivo
 Subtitle (29/30): Calculadora de caja y monedas
-Keywords (98/100): contar,billetes,arqueo,cierre,caja,registradora,deposito,banco,cambio,propinas,total,diario,tienda
-
-As briefed. One note: "caja" is already in the subtitle, so it adds nothing in the keywords; swapping it for another word (for example "conteo" or "fondo") frees 4 characters. Not changed here; Brian decides.
+Keywords (100/100): contar,billetes,arqueo,cierre,conteo,registradora,deposito,banco,cambio,propinas,total,diario,tienda
 
 Promotional text (es-MX, 139/170): Cuenta la caja en menos de un minuto, ve al instante si sobra o falta, y guarda una hoja de conteo para imprimir. Sin cuenta, sin internet.
 
-Description (es-MX): use the English description, translated by Cowork; it carries the same claims and the same limits (no camera, no scanning, no financial advice).
+Description (es-MX): a Spanish translation of the English description, entered in App Store Connect on Nov 22, 2026. The app's own text is in English; only the store listing is in Spanish.
 
 ## Promotional text (142/170)
 Count the till in under a minute, see at once if it is over or short, and keep a count sheet you can print or send. No account, works offline.
@@ -66,7 +64,7 @@ SIX CURRENCIES
 
 PRIVATE AND OFFLINE
 • No account, no sign-in, no cloud
-• Works in airplane mode; nothing leaves your iPhone unless you send it
+• Works in airplane mode; your counts stay on your iPhone unless you send them
 
 Cash Counter adds up what you type. It does not use the camera and does not scan money. It is a calculator and a record, not accounting or tax software, and gives no financial advice.
 
@@ -113,11 +111,12 @@ Free: unlimited counting, one till, the last three saved counts in History, the 
 
 How to test: on the Count tab, tap plus on a few rows, or tap a number and type it (Next jumps to the next row); hold the Quarters row and tap Add a roll. Tap Add expected amount at the bottom, choose Float + sales, type a float and sales, Done: the screen shows Short by or Over by. Tap Save count, then Save count again. On the saved count, tap Count sheet and Share or Print. History shows it by day; Settings has Export history as CSV.
 
-## Screenshots (to make: 6.3 inch at 1206x2622 and 6.9 inch at 1320x2868, six each)
+## Screenshots (6.9 inch at 1320x2868 and 6.3 inch at 1206x2622, six each)
+Made: store/screenshots/67-1.png to 67-6.png (6.9 inch) and 61-1.png to 61-6.png (6.3 inch), PNG, sRGB, no alpha, by `node store/screenshots.js` from the 4x screen renders in store/screens/. The purchase review screenshot of the in-app paywall alone is store/screenshots/paywall-review.png at 1179x2556.
 From the app's own screens; a short caption at the top in Barlow Tab on the tray background; no device frames, gradients or emoji, and no pictures of real money. Sample content is a made-up front register.
 1. "Count Money Fast": the count with a total, mid-count, large plus and minus (render 02-count-mid)
-2. "Over or Short at a Glance": the total with "Short by $4.50" and the expected amount (05-difference)
-3. "Print a Count Sheet": the count sheet preview with Share, Print and Save to Files (09-sheet-preview)
+2. "Over or Short at a Glance": the total with "Short by $4.50" and the expected amount, cut to the lower part of the count so it reads large (05-difference)
+3. "Print a Count Sheet": the count sheet preview, cut to the page so it reads large (09-sheet-preview; Share, Print and Save to Files sit just below it in the app)
 4. "Every Close in History": History by day with totals and over or short (07-history, on Pro so all show)
 5. "Know What to Bank": the deposit helper with the float and the bank column (08-deposit)
-6. "Private and Offline": the count in dark mode with the line "No account. Nothing leaves your iPhone." (01 or 02 dark)
+6. "Private and Offline": the count in dark mode, short by $4.50, with the line "No account. Your counts stay on your iPhone." (05-difference, dark)
