@@ -41,7 +41,7 @@ const SHOTS = [
   { file: 'sheet', caption: 'Print a Count Sheet', crop: { top: 0.07, height: 0.695 } },
   { file: 'history', caption: 'Every Close in History' },
   { file: 'deposit', caption: 'Know What to Bank' },
-  { file: 'count-dark', caption: 'Private and Offline', sub: 'No account. Nothing leaves your iPhone.', dark: true },
+  { file: 'count-dark', caption: 'Private and Offline', sub: 'No account. Your counts stay on your iPhone.', dark: true },
 ];
 
 const SIZES = [

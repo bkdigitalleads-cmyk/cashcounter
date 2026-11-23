@@ -64,7 +64,7 @@ SIX CURRENCIES
 
 PRIVATE AND OFFLINE
 • No account, no sign-in, no cloud
-• Works in airplane mode; nothing leaves your iPhone unless you send it
+• Works in airplane mode; your counts stay on your iPhone unless you send them
 
 Cash Counter adds up what you type. It does not use the camera and does not scan money. It is a calculator and a record, not accounting or tax software, and gives no financial advice.
 
@@ -119,4 +119,4 @@ From the app's own screens; a short caption at the top in Barlow Tab on the tray
 3. "Print a Count Sheet": the count sheet preview, cut to the page so it reads large (09-sheet-preview; Share, Print and Save to Files sit just below it in the app)
 4. "Every Close in History": History by day with totals and over or short (07-history, on Pro so all show)
 5. "Know What to Bank": the deposit helper with the float and the bank column (08-deposit)
-6. "Private and Offline": the count in dark mode, short by $4.50, with the line "No account. Nothing leaves your iPhone." (05-difference, dark)
+6. "Private and Offline": the count in dark mode, short by $4.50, with the line "No account. Your counts stay on your iPhone." (05-difference, dark)

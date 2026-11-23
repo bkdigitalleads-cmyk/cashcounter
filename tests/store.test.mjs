@@ -59,7 +59,8 @@ test('description leads with outcomes and states the limits; the review note cov
   assert.match(first, /under a minute/);
   assert.match(first, /over or short/);
   assert.match(first, /count sheet/);
-  assert.match(d, /Works in airplane mode; nothing leaves your iPhone/);
+  assert.match(d, /Works in airplane mode; your counts stay on your iPhone unless you send them/);
+  assert.ok(!/nothing leaves/i.test(meta), "no overclaim: a Pro purchase record goes to Apple and RevenueCat");
   assert.match(d, /does not use the camera and does not scan money/);
   assert.match(d, /not accounting or tax software, and gives no financial advice/);
   const note = section('App Review note');
