@@ -145,3 +145,20 @@ test('store screenshots: six at 1320x2868 and six at 1206x2622, and the paywall 
     assert.ok(meta.includes(`"${c}"`), `${c} is in the plan`);
   }
 });
+
+test('extra listings indexed for US search: eight listings, names and subtitles at most 30 characters, keywords at most 100 bytes with no spaces', () => {
+  const sec = section('Extra listings indexed for US search');
+  assert.match(sec.split('\n')[0], /^Apple also reads these eight languages for searches in the US store/);
+  const rows = sec
+    .split('\n')
+    .filter((l) => l.startsWith('| ') && !l.startsWith('| Listing') && !l.startsWith('|---'))
+    .map((l) => l.slice(2, -2).split(' | '));
+  assert.deepEqual(rows.map((r) => r[0]), ['Arabic', 'French', 'Korean', 'Portuguese (Brazil)', 'Russian', 'Vietnamese', 'Chinese (Simplified)', 'Chinese (Traditional)']);
+  for (const [listing, name, sub, kw] of rows) {
+    assert.ok(name.length <= 30, `${listing} name: ${name.length}`);
+    assert.ok(sub.length <= 30, `${listing} subtitle: ${sub.length}`);
+    assert.ok(Buffer.byteLength(kw, 'utf8') <= 100, `${listing} keywords: ${Buffer.byteLength(kw, 'utf8')} bytes`);
+    assert.ok(!/\s/.test(kw), `${listing} keywords have no spaces`);
+    assert.ok(kw.split(',').every((w) => w.length > 0), `${listing} keywords have no empty entries`);
+  }
+});
