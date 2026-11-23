@@ -7,7 +7,7 @@ App #18 in Brian's iOS app portfolio (seller bkdigitalleads-cmyk). Expo SDK 57, 
 - App Store name: "Count Money: Cash Calculator" (accepted in App Store Connect, Nov 22, 2026). Subtitle "Coin Counter & Money Counter". Spanish (Mexico): "Contador de Dinero: Efectivo", "Calculadora de caja y monedas". Home screen name and in-app name: "Cash Counter". Category Business, secondary Finance. Bundle ID com.bwk.cashcounter. Expo slug and scheme: cashcounter. Owner bkdeveloper123. GitHub: bkdigitalleads-cmyk/cashcounter.
 - Set up (Nov 22, 2026, values from Cowork): app.json `extra.revenueCatApiKeyIos` is the public RevenueCat SDK key (starts with `appl_`, so purchases are on; the app runs with purchases off whenever it does not), eas.json `ascAppId` 6838074076, app.json `extra.eas.projectId` 491bd6d2-de07-4673-9eb5-cf479f53edfc (Expo project bkdeveloper123/cashcounter, set Nov 22). No placeholders are left.
 - Not in the store yet. 1.0.0 build 1 is on branch claude/cash-1.0.0 (PR, not merged). Nothing has been built with EAS.
-- What it is: a cash counter for closing time. One row per note and coin, large plus and minus for one thumb, a tap-to-type keypad, rolls and straps on a long press, the total pinned at the bottom, an expected amount with over or short in plain words, saved counts by day and by till, a deposit helper, a one-page count sheet and a CSV of History. No account, no server, nothing leaves the phone unless the person shares a sheet or a CSV.
+- What it is: a cash counter for closing time. One row per note and coin, large plus and minus for one thumb, a tap-to-type keypad, rolls and straps on a long press, the total pinned at the bottom, an expected amount with over or short in plain words, saved counts by day and by till, a deposit helper, a one-page count sheet and a CSV of History. No account, no server; counts stay on the phone unless the person shares a sheet or a CSV.
 - Guardrail, always: the app is a calculator and a record. It does not use the camera and does not scan or recognize cash, and no text (app, listing, website) may suggest it does. It is not accounting or tax software and gives no financial advice. Notes and coins are drawn as labeled tiles in the app's own style; never reproduce real banknote or coin artwork. No brand, store or bank names anywhere.
 
 ## How shipping works (read before every push)
@@ -35,7 +35,7 @@ App #18 in Brian's iOS app portfolio (seller bkdigitalleads-cmyk). Expo SDK 57, 
 - Design (docs/design/NOTES.md) uses the theme's tokens, never ad hoc values. The accent (deposit-slip blue) is on the main button only; the flag (signal amber) is on over or short only. Everything a thumb uses on the count is at least 56 points. Glyphs are drawn in src/ui/Glyph.tsx. No icon pack.
 - Fonts: only SIL OFL fonts, each with its licence in assets/fonts. Barlow Tab is Barlow with its tabular figures made the default by store/tabular-fonts.py.
 - plugins/withoutPushEntitlement.js stays last in app.json plugins. After touching plugins, check `npx expo config --type introspect` still shows `ios.entitlements` as `{}` and no camera, microphone, location or photo-library usage strings. The app needs no permission but notifications (asked only for the trial reminder).
-- Nothing leaves the device except a count sheet or CSV the person sends. Never add analytics, a server, sync or a network call.
+- Counts stay on the device unless the person shares a count sheet or CSV. Never add analytics, a server, sync or a network call.
 
 ## Logging (so Brian's Cowork session can follow along)
 

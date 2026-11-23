@@ -26,6 +26,20 @@ Promotional text (es-MX, 139/170): Cuenta la caja en menos de un minuto, ve al i
 
 Description (es-MX): a Spanish translation of the English description, entered in App Store Connect on Nov 22, 2026. The app's own text is in English; only the store listing is in Spanish.
 
+## Extra listings indexed for US search
+Apple also reads these eight languages for searches in the US store; each holds its own English name, subtitle and keyword field, and the English description; phrases only form inside one listing. As entered in App Store Connect.
+
+| Listing | Name | Subtitle | Keywords |
+|---|---|---|---|
+| Arabic | Cash Counter: Money Count App | Till Counter & Coin Calculator | drawer,register,bill,change,counting,denominations,deposit,bank,daily,sheet,tally,tracker,cashier |
+| French | Money Counter: Till & Drawer | Cash Register Count Calculator | coin,bill,change,counting,float,balance,closing,shift,retail,shop,store,cafe,bar,restaurant,market |
+| Korean | Coin Counter: Cash Count Sheet | Count Money, Bills and Change | calculator,till,drawer,register,roll,note,banknote,dollar,euro,pound,peso,currency,denomination,wrap |
+| Portuguese (Brazil) | Till Counter: Cash Up & Float | Count Money, Coins & Banknotes | calculator,drawer,register,bill,change,deposit,bank,safe,petty,end,day,closing,report,pdf,print,sign |
+| Russian | Drawer Counter: Cash Register | Money Calculator, Count Bills | coin,till,change,counting,tally,log,history,over,short,expected,difference,deposit,float,cashier |
+| Vietnamese | Money Calculator: Bill Counter | Cash Count for Church & Clubs | coin,till,drawer,offering,collection,treasurer,fundraiser,school,event,booth,sale,counting,deposit |
+| Chinese (Simplified) | Cash Calculator: Count Change | Coin Counter & Money Tally | till,drawer,register,bill,counting,tracker,daily,sales,small,business,vendor,retail,cashier,up |
+| Chinese (Traditional) | Cash Tracker: Daily Till Count | Money Counter, Coin Calculator | drawer,register,bill,change,counting,management,book,log,report,deposit,bank,float,cashier,shift |
+
 ## Promotional text (142/170)
 Count the till in under a minute, see at once if it is over or short, and keep a count sheet you can print or send. No account, works offline.
 
