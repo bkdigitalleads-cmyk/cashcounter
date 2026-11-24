@@ -350,6 +350,9 @@ test('build 3: a default name follows the till when a count in progress moves; a
   assert.equal(H.nameForTill('Back register close', 'Back register'), '');
   assert.equal(H.nameForTill('', 'Back register'), '');
   assert.equal(H.nameForTill('Sunday close', 'Back register'), 'Sunday close', 'a name the person typed stays');
+  // Confirmed by Brian, Nov 24: a count named "Front register", reopened, switched to Back register and saved kept "Front register".
+  assert.equal(H.nameForTill('Front register', 'Front register'), '', 'the reopened count drops the old till name when it moves to Back register');
+  assert.equal(H.nameForTill('Front register close', 'Front register'), '');
   // Once empty, the save sheet offers the new till's default.
   assert.equal(H.defaultCountName('Front register'), 'Front register close');
 });
