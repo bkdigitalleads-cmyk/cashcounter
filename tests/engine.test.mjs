@@ -345,6 +345,8 @@ test('build 2: the roll and strap hint sits above the first row until one is add
   const count = read('src/screens/Count.tsx');
   assert.match(count, /ListHeaderComponent=\{[\s\S]*?data\.packHintDone \? null : \([\s\S]*?\{packHint\(draft\.currency\)\}/);
   assert.match(count, /onLongPress=\{onLong\}\s+delayLongPress=\{350\}/, 'the long press on a row works as before');
+  assert.match(count, /Hold a row to add a \{packWord\(draft\.currency, typingDen\)\}\./, 'the keypad sheet matches the hint');
+  assert.ok(!/Long press a row/.test(count), 'no "Long press a row" left on screen');
   const hint = count.slice(count.indexOf('ListHeaderComponent='), count.indexOf('ListFooterComponent='));
   assert.ok(!/onPress|<Press/.test(hint), 'the hint is a line of text, not a control');
   const data = read('src/data.tsx');

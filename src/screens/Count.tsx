@@ -187,7 +187,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
               <View style={styles.keypadHead}>
                 <CashTile theme={theme} d={typingDen} />
                 <Fine theme={theme} style={{ flex: 1 }}>
-                  How many {typingDen.kind === 'note' ? 'notes' : 'coins'}. Long press a row to add a {packWord(draft.currency, typingDen)}.
+                  How many {typingDen.kind === 'note' ? 'notes' : 'coins'}. Hold a row to add a {packWord(draft.currency, typingDen)}.
                 </Fine>
               </View>
             }
