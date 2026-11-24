@@ -54,6 +54,26 @@ export function showCountName(name: string, tillName: string): boolean {
   return n.length > 0 && n !== tillName.trim().toLowerCase();
 }
 
+/**
+ * True when a count's name is one the app would have given it for this
+ * till (empty, the till's name, or "<till> close"), not one the person
+ * typed. Case and spaces at the ends do not count.
+ */
+export function isDefaultName(name: string, tillName: string): boolean {
+  const n = name.trim().toLowerCase();
+  const t = tillName.trim().toLowerCase();
+  return n === '' || n === t || n === defaultCountName(tillName).toLowerCase();
+}
+
+/**
+ * The name a count in progress keeps when it moves to another till: a
+ * default name follows the till (it becomes empty, so the new till's
+ * default applies); a name the person typed stays.
+ */
+export function nameForTill(name: string, fromTillName: string): string {
+  return isDefaultName(name, fromTillName) ? '' : name;
+}
+
 /** "Front register, Nov 22" style default name for a new count. */
 export function defaultCountName(tillName: string): string {
   return `${tillName.trim() || 'Till'} close`;

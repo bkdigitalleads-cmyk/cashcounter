@@ -100,7 +100,7 @@ test('app.json: identity, iPhone only, no permissions, push entitlement plugin l
   assert.equal(app.slug, 'cashcounter');
   assert.equal(app.ios.bundleIdentifier, 'com.bwk.cashcounter');
   assert.equal(app.version, '1.0.0');
-  assert.equal(app.ios.buildNumber, '2', 'build 2: the roll and strap hint and the name shown once');
+  assert.equal(app.ios.buildNumber, '3', 'build 3: the roll and strap hint says what they are');
   assert.equal(app.ios.supportsTablet, false);
   assert.equal(app.owner, 'bkdeveloper123');
   assert.equal(JSON.parse(read('package.json')).version, app.version);
@@ -341,22 +341,42 @@ test('the app icon is 2D-2 everywhere: 1024 RGB with no alpha and square corners
   for (const f of ['index.html', 'privacy.html', 'support.html']) assert.match(read(`docs/${f}`), /src="icon-512\.png"[^>]*alt="Cash Counter app icon: three green bills fanned out and a gold coin, on dark green"/);
 });
 
-test('build 2: the roll and strap hint sits above the first row until one is added; no migration; the name is shown once everywhere', () => {
+test('build 2: the roll and strap hint sits above the first row; no migration; the name is shown once everywhere', () => {
   const count = read('src/screens/Count.tsx');
   assert.match(count, /ListHeaderComponent=\{[\s\S]*?data\.packHintDone \? null : \([\s\S]*?\{packHint\(draft\.currency\)\}/);
   assert.match(count, /onLongPress=\{onLong\}\s+delayLongPress=\{350\}/, 'the long press on a row works as before');
-  assert.match(count, /Hold a row to add a \{packWord\(draft\.currency, typingDen\)\}\./, 'the keypad sheet matches the hint');
+  assert.match(count, /\{keypadLine\(draft\.currency, typingDen\)\}/, 'the keypad sheet uses the same words as the hint');
+  assert.match(count, /accessibilityHint=\{rowHint\(currency, d\)\}/, 'VoiceOver says Hold too');
+  assert.ok(!/Long press to add|'notes' : 'coins'/.test(count), 'no fixed "notes" or "Long press" left on the count screen');
+  assert.match(count, /sub=\{`\$\{pack\.pack\} \$\{pieceWord\(draft\.currency, pack\)\}, /, 'the long-press sheet says bills or notes as the currency does');
   assert.ok(!/Long press a row/.test(count), 'no "Long press a row" left on screen');
   const hint = count.slice(count.indexOf('ListHeaderComponent='), count.indexOf('ListFooterComponent='));
   assert.ok(!/onPress|<Press/.test(hint), 'the hint is a line of text, not a control');
   const data = read('src/data.tsx');
   assert.match(data, /packHint: 'hint\.packAdded'/);
-  assert.match(data, /if \(den\?\.pack\) \{\s+setPackHintDone\(true\);/, 'only an added roll, bag or strap retires the hint');
+  // Build 3: opening the hold sheet retires it too (checked in the build 3 test below).
   assert.match(data, /useState\(true\);[\s\S]*setPackHintDone\(\(await repo\.kvGet\(db, K\.packHint\)\) === '1'\)/, 'no flash of the hint before the flag is read');
   // Kept in the kv table: the shipped migration is untouched.
   const schema = read('src/db/schema.ts');
   assert.equal((schema.match(/^  \/\/ \d+:/gm) ?? []).length, 1);
   for (const f of ['src/pdf/layout.ts', 'src/screens/CountView.tsx', 'src/screens/History.tsx']) assert.match(read(f), /showCountName\(c\.name, c\.tillName\)/, f);
+});
+
+test('build 3: the hint retires when the hold sheet opens; the name follows the till; a count is saved under the till it is shown under', () => {
+  const count = read('src/screens/Count.tsx');
+  assert.match(count, /onLong=\{\(\) => \{[\s\S]{0,200}data\.retirePackHint\(\);\s+setPack\(d\);/, 'opening the hold sheet retires the hint');
+  const data = read('src/data.tsx');
+  assert.match(data, /const retirePackHint = useCallback\(\(\) => \{\s+setPackHintDone\(true\);\s+getDb\(\)\s+\.then\(\(db\) => repo\.kvSet\(db, K\.packHint, '1'\)\)/, 'hidden at once and written for the next launch');
+  assert.match(data, /if \(den\?\.pack\) retirePackHint\(\);/, 'adding a roll or strap still retires it');
+  assert.match(data, /setPackHintDone\(\(await repo\.kvGet\(db, K\.packHint\)\) === '1'\)/, 'read back at launch');
+  // Switching tills: a default name follows the till.
+  assert.match(data, /return \{ \.\.\.d, tillId: t\.id, name: nameForTill\(d\.name, from\) \};/);
+  // The save sheet starts on the till shown on the count, shows the till above the name, and a default name follows the till picked there.
+  assert.match(count, /<SaveForm[\s\S]{0,600}tillId=\{till\.id\}/);
+  const form = count.slice(count.indexOf('function SaveForm('));
+  assert.ok(form.indexOf('label="Till"') < form.indexOf('accessibilityLabel="Name"'), 'Till comes before Name');
+  assert.match(form, /const pickTill = \(id: string\) => \{\s+if \(isDefaultName\(name, tillName\)\) setName\(''\);\s+setTill\(id\);/);
+  assert.match(form, /onSave\(\{ name: name\.trim\(\) \|\| defaultCountName\(tillName\), note, day, tillId: till \}\)/, 'the name and the till come from the same pick');
 });
 
 test('the first-run screens are called Intro; the banned word does not appear in the code', () => {
