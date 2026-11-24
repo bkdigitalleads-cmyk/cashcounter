@@ -302,14 +302,34 @@ test('money in the phone format; input fields without symbols', () => {
 
 // ---------- build 2: the roll and strap hint, and the name shown once ----------
 
-test('the hint above the first row uses the currency\'s own words: roll, bag (UK) or strap', () => {
-  assert.equal(C.packHint('USD'), 'Hold a row to add a roll or strap');
-  assert.equal(C.packHint('CAD'), 'Hold a row to add a roll or strap');
-  assert.equal(C.packHint('EUR'), 'Hold a row to add a roll or strap');
-  assert.equal(C.packHint('AUD'), 'Hold a row to add a roll or strap');
-  assert.equal(C.packHint('GBP'), 'Hold a row to add a bag or strap');
-  assert.equal(C.packHint('MXN'), 'Hold a note row to add a strap', 'no standard peso coin roll, so only notes');
-  for (const code of C.CURRENCY_CODES) assert.ok(!/[!\u2014]/.test(C.packHint(code)));
+test('build 3: the hint says what rolls and straps are, in the currency\'s own words, with the strap size from the data and no roll size', () => {
+  assert.equal(C.packHint('USD'), 'Hold a row to add a roll of coins or a strap of 100 bills');
+  assert.equal(C.packHint('CAD'), 'Hold a row to add a roll of coins or a strap of 100 bills');
+  assert.equal(C.packHint('EUR'), 'Hold a row to add a roll of coins or a strap of 100 notes');
+  assert.equal(C.packHint('AUD'), 'Hold a row to add a roll of coins or a strap of 100 notes');
+  assert.equal(C.packHint('GBP'), 'Hold a row to add a bag of coins or a strap of 50 or 100 notes', 'pound notes band in 50s and 100s');
+  assert.equal(C.packHint('MXN'), 'Hold a note row to add a strap of 100 notes', 'no standard peso coin roll, so only notes');
+  for (const code of C.CURRENCY_CODES) {
+    const h = C.packHint(code);
+    assert.ok(!/[!\u2014]/.test(h));
+    // The strap sizes in the hint are exactly the ones in the data.
+    const sizes = [...new Set(C.CURRENCIES[code].denominations.filter((d) => d.kind === 'note').map((d) => d.pack))].sort((a, b) => a - b);
+    assert.ok(h.endsWith(`a strap of ${sizes.join(' or ')} ${C.noteWord(code)}`), code);
+    assert.ok(!/roll of \d|bag of \d/.test(h), `${code}: no roll size, it differs by coin`);
+  }
+});
+
+test('build 3: bills in the US and Canada, notes elsewhere; the keypad line and the VoiceOver hint give that row\'s own count', () => {
+  assert.deepEqual(C.CURRENCY_CODES.map((c) => C.noteWord(c)), ['bills', 'bills', 'notes', 'notes', 'notes', 'notes']);
+  const d = (cur, id) => C.denomination(cur, id);
+  assert.equal(C.keypadLine('USD', d('USD', 'n2000')), 'How many bills. Hold this row to add a strap of 100 bills.');
+  assert.equal(C.keypadLine('USD', d('USD', 'c25')), 'How many coins. Hold this row to add a roll of 40 coins.');
+  assert.equal(C.keypadLine('GBP', d('GBP', 'n2000')), 'How many notes. Hold this row to add a strap of 50 notes.');
+  assert.equal(C.keypadLine('GBP', d('GBP', 'c50')), 'How many coins. Hold this row to add a bag of 20 coins.');
+  assert.equal(C.keypadLine('MXN', d('MXN', 'c1000')), 'How many coins.', 'no roll offered, none promised');
+  assert.equal(C.rowHint('CAD', d('CAD', 'n500')), 'Type the number. Hold to add a strap of 100 bills.');
+  assert.equal(C.rowHint('MXN', d('MXN', 'c500')), 'Type the number.');
+  assert.equal(C.pieceWord('AUD', d('AUD', 'n5000')), 'notes');
 });
 
 test('a count\'s name shows under the till\'s only when it differs', () => {
@@ -318,4 +338,18 @@ test('a count\'s name shows under the till\'s only when it differs', () => {
   assert.equal(H.showCountName('', 'Front register'), false);
   assert.equal(H.showCountName('Front register close', 'Front register'), true);
   assert.equal(H.showCountName('Sunday close', 'Bar'), true);
+});
+
+test('build 3: a default name follows the till when a count in progress moves; a typed name stays', () => {
+  assert.equal(H.isDefaultName('', 'Back register'), true);
+  assert.equal(H.isDefaultName('Back register', 'Back register'), true);
+  assert.equal(H.isDefaultName(' back register close ', 'Back register'), true);
+  assert.equal(H.isDefaultName('Sunday close', 'Back register'), false);
+  // Brian's row: a count named after Back register, moved to Front register, must not keep "Back register".
+  assert.equal(H.nameForTill('Back register', 'Back register'), '');
+  assert.equal(H.nameForTill('Back register close', 'Back register'), '');
+  assert.equal(H.nameForTill('', 'Back register'), '');
+  assert.equal(H.nameForTill('Sunday close', 'Back register'), 'Sunday close', 'a name the person typed stays');
+  // Once empty, the save sheet offers the new till's default.
+  assert.equal(H.defaultCountName('Front register'), 'Front register close');
 });

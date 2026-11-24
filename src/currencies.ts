@@ -212,16 +212,51 @@ export function packWord(code: CurrencyCode, d: Denomination): string {
   return d.kind === 'note' ? 'strap' : CURRENCIES[code].coinPack;
 }
 
+/** What people in that currency call paper money: bills in the US and Canada, notes everywhere else. */
+export function noteWord(code: CurrencyCode): 'bills' | 'notes' {
+  return code === 'USD' || code === 'CAD' ? 'bills' : 'notes';
+}
+
+/** "bills", "notes" or "coins", for a count of this denomination. */
+export function pieceWord(code: CurrencyCode, d: Pick<Denomination, 'kind'>): string {
+  return d.kind === 'note' ? noteWord(code) : 'coins';
+}
+
+/** "50 or 100": the strap sizes of a currency's notes, smallest first. */
+function strapSizes(code: CurrencyCode): string {
+  const sizes = [...new Set(CURRENCIES[code].denominations.filter((d) => d.kind === 'note' && d.pack).map((d) => d.pack as number))].sort((a, b) => a - b);
+  return sizes.join(' or ');
+}
+
 /**
- * The one quiet line above the first row on the count screen, in the
- * currency's own words, until the person has added a roll, bag or strap
- * once: "Hold a row to add a roll or strap" (a bag in the UK). A currency
- * with no standard coin roll names the notes only.
+ * The one quiet line above the first row on the count screen, until the
+ * person has added a roll, bag or strap once. It says what they are, in
+ * the currency's own words: "Hold a row to add a roll of coins or a strap
+ * of 100 bills". The strap size comes from the notes above (the pound has
+ * two); no roll size is given, since it differs by coin. A currency with
+ * no standard coin roll names the notes only. May wrap to two lines.
  */
 export function packHint(code: CurrencyCode): string {
   const c = CURRENCIES[code];
+  const strap = `a strap of ${strapSizes(code)} ${noteWord(code)}`;
   const coins = c.denominations.some((d) => d.kind === 'coin' && d.pack);
-  return coins ? `Hold a row to add a ${c.coinPack} or strap` : 'Hold a note row to add a strap';
+  return coins ? `Hold a row to add a ${c.coinPack} of coins or ${strap}` : `Hold a note row to add ${strap}`;
+}
+
+/**
+ * The line in the keypad sheet for one row: how many of what, and the
+ * roll, bag or strap that row takes, with its own count: "How many coins.
+ * Hold this row to add a roll of 40 coins." A row with no standard roll
+ * says only how many.
+ */
+export function keypadLine(code: CurrencyCode, d: Denomination): string {
+  const what = pieceWord(code, d);
+  return d.pack ? `How many ${what}. Hold this row to add a ${packWord(code, d)} of ${d.pack} ${what}.` : `How many ${what}.`;
+}
+
+/** VoiceOver hint on a row's number. */
+export function rowHint(code: CurrencyCode, d: Denomination): string {
+  return d.pack ? `Type the number. Hold to add a ${packWord(code, d)} of ${d.pack} ${pieceWord(code, d)}.` : 'Type the number.';
 }
 
 /** Paper size for the count sheet: US Letter in the Americas that use it, A4 everywhere else. */

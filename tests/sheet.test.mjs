@@ -86,3 +86,11 @@ test('build 2: the sheet prints the count name under the till name only when the
   const other = texts(L.layoutSheet(m, { count: { ...base, name: 'Sunday close' }, paper: 'letter', locale: 'en-US' }));
   assert.ok(other.includes('Front register') && other.includes('Sunday close'));
 });
+
+test('build 3: the count sheet heads the paper money Bills in dollars (US, Canada) and Notes elsewhere', () => {
+  for (const [cur, want] of [['USD', 'BILLS'], ['CAD', 'BILLS'], ['EUR', 'NOTES'], ['GBP', 'NOTES'], ['AUD', 'NOTES'], ['MXN', 'NOTES']]) {
+    const t = texts(L.layoutSheet(m, { count: S.sampleCount(cur, '2026-11-22', 1), paper: 'letter', locale: 'en-US' }));
+    assert.ok(t.includes(want), `${cur}: ${want}`);
+    assert.ok(!t.includes(want === 'BILLS' ? 'NOTES' : 'BILLS'), cur);
+  }
+});

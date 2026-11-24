@@ -15,6 +15,7 @@ import type { CustomAmount, Draft, Expected } from './count';
 import { addPack, emptyDraft, isBlank, newId, NO_EXPECTED, parseDraft, stepQty } from './count';
 import { cleanQty } from './money';
 import type { SavedCount } from './history';
+import { nameForTill } from './history';
 import type { RowSetup } from './rows';
 import { parseRowSetup } from './rows';
 import type { Paper } from './pdf/layout';
@@ -36,8 +37,10 @@ interface Data {
   locale: PhoneLocale;
   paper: Paper;
   installDay: string | null;
-  /** True once a roll, bag or strap has been added; until then the count screen shows how. */
+  /** True once the hold sheet has been opened (or a roll, bag or strap added); until then the count screen shows how. */
   packHintDone: boolean;
+  /** Retires the hint for good: the hold sheet was opened. */
+  retirePackHint: () => void;
   tills: Till[];
   /** The till the count on screen is for. */
   till: Till;
@@ -144,22 +147,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const setQty = useCallback((id: string, qty: number) => setDraft((d) => ({ ...d, pieces: { ...d.pieces, [id]: cleanQty(qty) } })), [setDraft]);
   const bump = useCallback((id: string, delta: number) => setDraft((d) => ({ ...d, pieces: { ...d.pieces, [id]: stepQty(d.pieces[id] ?? 0, delta) } })), [setDraft]);
+  /** The hold sheet opened, or a roll, bag or strap was added: the hint has done its job, now and after a restart. */
+  const retirePackHint = useCallback(() => {
+    setPackHintDone(true);
+    getDb()
+      .then((db) => repo.kvSet(db, K.packHint, '1'))
+      .catch(() => {});
+  }, []);
+
   const addPackTo = useCallback(
     (id: string) => {
       const den = CURRENCIES[draftRef.current.currency].denominations.find((x) => x.id === id);
-      // The first roll, bag or strap added: the hint has done its job.
-      if (den?.pack) {
-        setPackHintDone(true);
-        getDb()
-          .then((db) => repo.kvSet(db, K.packHint, '1'))
-          .catch(() => {});
-      }
+      if (den?.pack) retirePackHint();
       setDraft((d) => {
         const dd = CURRENCIES[d.currency].denominations.find((x) => x.id === id);
         return dd ? { ...d, pieces: { ...d.pieces, [id]: addPack(d.pieces[id] ?? 0, dd) } } : d;
       });
     },
-    [setDraft]
+    [setDraft, retirePackHint]
   );
   const setCustom = useCallback(
     (row: CustomAmount) =>
@@ -182,7 +187,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     (id: string) => {
       const t = tills.find((x) => x.id === id);
       if (!t) return;
-      setDraft((d) => (isBlank(d) || d.currency !== t.currency ? freshFor(t, d.expected) : { ...d, tillId: t.id }));
+      // A count in progress moves with its pieces; a default name follows the new till, a typed one stays.
+      setDraft((d) => {
+        if (isBlank(d) || d.currency !== t.currency) return freshFor(t, d.expected);
+        const from = tills.find((x) => x.id === d.tillId)?.name ?? '';
+        return { ...d, tillId: t.id, name: nameForTill(d.name, from) };
+      });
     },
     [tills, setDraft]
   );
@@ -267,6 +277,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       paper,
       installDay,
       packHintDone,
+      retirePackHint,
       tills,
       till,
       counts,
@@ -288,7 +299,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setTillCurrency,
       saveRowSetup,
     }),
-    [loaded, failed, locale, paper, installDay, packHintDone, tills, till, counts, draft, rowSetup, setQty, bump, addPackTo, setCustom, setExpected, clearDraft, openDraft, switchTill, saveDraft, removeCount, saveTill, addTill, removeTill, setTillCurrency, saveRowSetup]
+    [loaded, failed, locale, paper, installDay, packHintDone, retirePackHint, tills, till, counts, draft, rowSetup, setQty, bump, addPackTo, setCustom, setExpected, clearDraft, openDraft, switchTill, saveDraft, removeCount, saveTill, addTill, removeTill, setTillCurrency, saveRowSetup]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

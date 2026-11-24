@@ -10,7 +10,7 @@
  * brand, no artwork: notes and coins are named, not pictured.
  */
 import type { CurrencyCode } from '../currencies.ts';
-import { CURRENCIES } from '../currencies.ts';
+import { CURRENCIES, noteWord } from '../currencies.ts';
 import type { SavedCount } from '../history.ts';
 import { showCountName } from '../history.ts';
 import { countTotals, diffKind, diffWords, expectedAmount } from '../count.ts';
@@ -169,7 +169,8 @@ export function layoutSheet(m: Measure, input: SheetInput): Page {
   };
   const sectionSum = (list: typeof rows) => list.reduce((a, d) => a + (t.rows[d.id] ?? 0), 0);
   if (notes.length) {
-    header('Notes', sectionSum(notes));
+    // Bills in the US and Canada, notes elsewhere, as on the count screen.
+    header(noteWord(c.currency) === 'bills' ? 'Bills' : 'Notes', sectionSum(notes));
     for (const d of notes) line(d.tile, d.name, formatQty(c.pieces[d.id] ?? 0, locale), t.rows[d.id] ?? 0, !(c.pieces[d.id] ?? 0));
   }
   if (coins.length) {

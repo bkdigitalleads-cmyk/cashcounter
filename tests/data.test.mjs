@@ -226,3 +226,45 @@ test('the onboarding sample count is short by a little, in each currency', () =>
     assert.equal(s.total, K.countTotals(cur, s.pieces).total);
   }
 });
+
+test('build 3: the roll and strap hint flag survives a restart (written to the database file, read by a new connection)', async () => {
+  const { mkdtempSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const dir = mkdtempSync(`${tmpdir()}/cc-`);
+  const file = `${dir}/cashcounter.db`;
+  const open = () => {
+    const sq = new DatabaseSync(file);
+    const db = {
+      exec: async (sql) => sq.exec(sql),
+      run: async (sql, p = []) => {
+        sq.prepare(sql).run(...p);
+      },
+      all: async (sql, p = []) => sq.prepare(sql).all(...p).map((r) => ({ ...r })),
+      get: async (sql, p = []) => {
+        const r = sq.prepare(sql).get(...p);
+        return r ? { ...r } : null;
+      },
+      tx: async (fn) => {
+        sq.exec('BEGIN');
+        try {
+          await fn();
+          sq.exec('COMMIT');
+        } catch (e) {
+          sq.exec('ROLLBACK');
+          throw e;
+        }
+      },
+    };
+    return { sq, db };
+  };
+  const first = open();
+  await SC.migrate(first.db);
+  assert.equal(await R.kvGet(first.db, 'hint.packAdded'), null, 'a new install shows the hint');
+  await R.kvSet(first.db, 'hint.packAdded', '1');
+  first.sq.close();
+  const second = open();
+  await SC.migrate(second.db);
+  assert.equal(await R.kvGet(second.db, 'hint.packAdded'), '1', 'still retired after a restart');
+  second.sq.close();
+  rmSync(dir, { recursive: true, force: true });
+});

@@ -4,14 +4,15 @@ import { useTheme, radius, space, tabular, Theme, TOUCH, type } from '../theme';
 import { useData } from '../data';
 import { useApp } from '../state';
 import type { Denomination } from '../currencies';
-import { CURRENCIES, packHint, packWord } from '../currencies';
+import type { CurrencyCode } from '../currencies';
+import { CURRENCIES, keypadLine, packHint, packWord, pieceWord, rowHint } from '../currencies';
 import type { Expected, ExpectedMode } from '../count';
 import { countTotals, difference, expectedAmount, isBlank } from '../count';
 import { MAX_QTY, parseQty } from '../money';
 import { visibleDenoms } from '../rows';
 import { formatDate, formatMoney, formatQty } from '../format';
 import { addDays, isoDay } from '../dates';
-import { defaultCountName } from '../history';
+import { defaultCountName, isDefaultName } from '../history';
 import { canUseDeposit } from '../gates';
 import Glyph from '../ui/Glyph';
 import { CashTile, DiffLine, Keypad } from '../ui/Cash';
@@ -101,6 +102,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
           <CountRow
             theme={theme}
             d={d}
+            currency={draft.currency}
             qty={draft.pieces[d.id] ?? 0}
             amount={totals.rows[d.id] ?? 0}
             money={money}
@@ -114,7 +116,11 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
               data.bump(d.id, 1);
             }}
             onType={() => openQty(d)}
-            onLong={() => setPack(d)}
+            onLong={() => {
+              // Opening the hold sheet is enough: the hint has shown the way, whether or not a roll or strap is added.
+              data.retirePackHint();
+              setPack(d);
+            }}
           />
         )}
         ListHeaderComponent={
@@ -187,7 +193,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
               <View style={styles.keypadHead}>
                 <CashTile theme={theme} d={typingDen} />
                 <Fine theme={theme} style={{ flex: 1 }}>
-                  How many {typingDen.kind === 'note' ? 'notes' : 'coins'}. Hold a row to add a {packWord(draft.currency, typingDen)}.
+                  {keypadLine(draft.currency, typingDen)}
                 </Fine>
               </View>
             }
@@ -233,7 +239,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
                   first
                   glyph={pack.kind === 'note' ? 'strap' : 'roll'}
                   label={`Add a ${packWord(draft.currency, pack)}`}
-                  sub={`${pack.pack} ${pack.kind === 'note' ? 'notes' : 'coins'}, ${money(pack.pack * pack.value)}`}
+                  sub={`${pack.pack} ${pieceWord(draft.currency, pack)}, ${money(pack.pack * pack.value)}`}
                   onPress={() => {
                     packHaptic();
                     data.addPackTo(pack.id);
@@ -264,7 +270,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
                 right={<View />}
               />
             </Tray>
-            <Fine theme={theme}>Now {formatQty(draft.pieces[pack.id] ?? 0, locale.tag)} {pack.kind === 'note' ? 'notes' : 'coins'}, {money((draft.pieces[pack.id] ?? 0) * pack.value)}.</Fine>
+            <Fine theme={theme}>Now {formatQty(draft.pieces[pack.id] ?? 0, locale.tag)} {pieceWord(draft.currency, pack)}, {money((draft.pieces[pack.id] ?? 0) * pack.value)}.</Fine>
           </View>
         ) : null}
       </Sheet>
@@ -377,7 +383,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
   );
 }
 
-function CountRow({ theme, d, qty, amount, money, locale, onMinus, onPlus, onType, onLong }: { theme: Theme; d: Denomination; qty: number; amount: number; money: (m: number) => string; locale: string; onMinus: () => void; onPlus: () => void; onType: () => void; onLong: () => void }) {
+function CountRow({ theme, d, currency, qty, amount, money, locale, onMinus, onPlus, onType, onLong }: { theme: Theme; d: Denomination; currency: CurrencyCode; qty: number; amount: number; money: (m: number) => string; locale: string; onMinus: () => void; onPlus: () => void; onType: () => void; onLong: () => void }) {
   return (
     <Press
       onLongPress={onLong}
@@ -404,8 +410,8 @@ function CountRow({ theme, d, qty, amount, money, locale, onMinus, onPlus, onTyp
         style={[styles.qty, { borderColor: qty ? theme.ink : theme.rule }]}
         pressedStyle={{ backgroundColor: theme.raised }}
         accessibilityRole="button"
-        accessibilityLabel={`${d.name}: ${qty} ${d.kind === 'note' ? 'notes' : 'coins'}`}
-        accessibilityHint="Type the number. Long press to add a roll or strap."
+        accessibilityLabel={`${d.name}: ${qty} ${pieceWord(currency, d)}`}
+        accessibilityHint={rowHint(currency, d)}
       >
         <Text style={[type.figure, { color: qty ? theme.ink : theme.inkFaint, fontSize: 24 }]} numberOfLines={1} adjustsFontSizeToFit maxFontSizeMultiplier={1.2}>
           {formatQty(qty, locale)}
@@ -520,6 +526,11 @@ function SaveForm({
   const tillName = tills.find((t) => t.id === till)?.name ?? '';
   const [name, setName] = useState(initialName);
   const [note, setNote] = useState(initialNote);
+  // Another till picked here: a default name follows it, a typed one stays.
+  const pickTill = (id: string) => {
+    if (isDefaultName(name, tillName)) setName('');
+    setTill(id);
+  };
   const dayChoices = [
     { id: today, label: 'Today' },
     { id: yesterday, label: 'Yesterday' },
@@ -531,6 +542,13 @@ function SaveForm({
         <Text style={[type.total, { color: theme.ink, fontSize: 36, lineHeight: 42 }]}>{total}</Text>
         {diff != null ? <DiffLine theme={theme} diff={diff} money={money} size="small" /> : null}
       </View>
+      {tills.length > 1 ? (
+        // The till first, so it is not mistaken for the count's name; it starts on the till shown on the count.
+        <View>
+          <SectionHead theme={theme}>Till</SectionHead>
+          <Choice theme={theme} label="Till" options={tills.map((t) => ({ id: t.id, label: t.name }))} value={till} onChange={pickTill} />
+        </View>
+      ) : null}
       <View>
         <SectionHead theme={theme}>Name</SectionHead>
         <TextBox theme={theme} value={name} onChangeText={setName} placeholder={defaultCountName(tillName)} maxLength={60} returnKeyType="done" accessibilityLabel="Name" />
@@ -539,12 +557,6 @@ function SaveForm({
         <SectionHead theme={theme}>Date</SectionHead>
         <Choice theme={theme} label="Date" options={dayChoices} value={day} onChange={setDay} />
       </View>
-      {tills.length > 1 ? (
-        <View>
-          <SectionHead theme={theme}>Till</SectionHead>
-          <Choice theme={theme} label="Till" options={tills.map((t) => ({ id: t.id, label: t.name }))} value={till} onChange={setTill} />
-        </View>
-      ) : null}
       <View>
         <SectionHead theme={theme}>Note</SectionHead>
         <TextBox theme={theme} value={note} onChangeText={setNote} placeholder="Optional, like who counted or a refund" multiline maxLength={500} style={{ minHeight: 84, paddingTop: space.m, textAlignVertical: 'top' }} accessibilityLabel="Note" />
