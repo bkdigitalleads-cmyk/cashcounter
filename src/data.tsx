@@ -25,6 +25,8 @@ import { phoneLocale, PhoneLocale } from './locale';
 const K = {
   draft: 'count.draft',
   installDay: 'install.day',
+  /** Set once the person has added a roll, bag or strap; the count screen's hint then goes away. */
+  packHint: 'hint.packAdded',
   rows: (c: CurrencyCode) => `rows.${c}`,
 };
 
@@ -34,6 +36,8 @@ interface Data {
   locale: PhoneLocale;
   paper: Paper;
   installDay: string | null;
+  /** True once a roll, bag or strap has been added; until then the count screen shows how. */
+  packHintDone: boolean;
   tills: Till[];
   /** The till the count on screen is for. */
   till: Till;
@@ -68,6 +72,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState<string | null>(null);
   const [installDay, setInstallDay] = useState<string | null>(null);
+  const [packHintDone, setPackHintDone] = useState(true);
   const [tills, setTills] = useState<Till[]>([]);
   const [counts, setCounts] = useState<SavedCount[]>([]);
   const [draft, setDraftState] = useState<Draft>(() => emptyDraft(FALLBACK_TILL.id, currencyForRegion(locale.region, locale.currency)));
@@ -93,6 +98,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           await repo.kvSet(db, K.installDay, day);
         }
         setInstallDay(day);
+        setPackHintDone((await repo.kvGet(db, K.packHint)) === '1');
         let list = await repo.listTills(db);
         if (list.length === 0) {
           // The first till: named on the last onboarding screen, in the region's currency.
@@ -139,11 +145,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const setQty = useCallback((id: string, qty: number) => setDraft((d) => ({ ...d, pieces: { ...d.pieces, [id]: cleanQty(qty) } })), [setDraft]);
   const bump = useCallback((id: string, delta: number) => setDraft((d) => ({ ...d, pieces: { ...d.pieces, [id]: stepQty(d.pieces[id] ?? 0, delta) } })), [setDraft]);
   const addPackTo = useCallback(
-    (id: string) =>
+    (id: string) => {
+      const den = CURRENCIES[draftRef.current.currency].denominations.find((x) => x.id === id);
+      // The first roll, bag or strap added: the hint has done its job.
+      if (den?.pack) {
+        setPackHintDone(true);
+        getDb()
+          .then((db) => repo.kvSet(db, K.packHint, '1'))
+          .catch(() => {});
+      }
       setDraft((d) => {
-        const den = CURRENCIES[d.currency].denominations.find((x) => x.id === id);
-        return den ? { ...d, pieces: { ...d.pieces, [id]: addPack(d.pieces[id] ?? 0, den) } } : d;
-      }),
+        const dd = CURRENCIES[d.currency].denominations.find((x) => x.id === id);
+        return dd ? { ...d, pieces: { ...d.pieces, [id]: addPack(d.pieces[id] ?? 0, dd) } } : d;
+      });
+    },
     [setDraft]
   );
   const setCustom = useCallback(
@@ -251,6 +266,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       locale,
       paper,
       installDay,
+      packHintDone,
       tills,
       till,
       counts,
@@ -272,7 +288,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setTillCurrency,
       saveRowSetup,
     }),
-    [loaded, failed, locale, paper, installDay, tills, till, counts, draft, rowSetup, setQty, bump, addPackTo, setCustom, setExpected, clearDraft, openDraft, switchTill, saveDraft, removeCount, saveTill, addTill, removeTill, setTillCurrency, saveRowSetup]
+    [loaded, failed, locale, paper, installDay, packHintDone, tills, till, counts, draft, rowSetup, setQty, bump, addPackTo, setCustom, setExpected, clearDraft, openDraft, switchTill, saveDraft, removeCount, saveTill, addTill, removeTill, setTillCurrency, saveRowSetup]
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

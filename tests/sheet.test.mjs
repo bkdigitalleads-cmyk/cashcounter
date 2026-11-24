@@ -78,3 +78,11 @@ test('wrap and fit keep text inside its column', () => {
   const f = L.fit(m, 'A very long till name that does not fit', 'bold', 24, 100);
   assert.ok(f.endsWith('...') && m.width(f, 'bold', 24) <= 100.01);
 });
+
+test('build 2: the sheet prints the count name under the till name only when they differ', () => {
+  const base = { id: 'a', tillId: 't', tillName: 'Front register', note: '', day: '2026-11-22', currency: 'USD', pieces: { n2000: 3 }, custom: [], expected: { mode: 'none', amount: 0, float: 0, sales: 0 }, total: 6000, diff: null, createdAt: 1, updatedAt: 1 };
+  const same = texts(L.layoutSheet(m, { count: { ...base, name: 'Front register' }, paper: 'letter', locale: 'en-US' }));
+  assert.equal(same.filter((t) => t === 'Front register').length, 1, 'shown once');
+  const other = texts(L.layoutSheet(m, { count: { ...base, name: 'Sunday close' }, paper: 'letter', locale: 'en-US' }));
+  assert.ok(other.includes('Front register') && other.includes('Sunday close'));
+});

@@ -7,6 +7,7 @@ import { CURRENCIES } from '../currencies';
 import { countTotals, expectedAmount, isBlank } from '../count';
 import { canUseDeposit } from '../gates';
 import { formatDate, formatMoney, formatQty, formatTime } from '../format';
+import { showCountName } from '../history';
 import Glyph from '../ui/Glyph';
 import { CashTile, DiffLine } from '../ui/Cash';
 import { Bar, Fine, MainButton, PlainButton, RoundButton, SectionHead, Slot, Tray } from '../ui/Kit';
@@ -74,7 +75,8 @@ export default function CountView({ id, onBack, onSheet, onDeposit, onReopen }: 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={{ gap: space.xs }}>
           <Text style={[type.small, { color: theme.inkSoft }]}>
-            {c.name}, {formatDate(c.day, locale)}, saved {formatTime(c.updatedAt, locale)}
+            {showCountName(c.name, c.tillName) ? `${c.name}, ` : ''}
+            {formatDate(c.day, locale)}, saved {formatTime(c.updatedAt, locale)}
           </Text>
           <Text style={[type.total, { color: theme.ink }]} accessibilityLabel={`Total ${money(c.total)}`}>
             {money(c.total)}

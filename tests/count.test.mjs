@@ -299,3 +299,23 @@ test('money in the phone format; input fields without symbols', () => {
   assert.equal(F.moneyInput(5, 'en-US'), '0.05');
   assert.equal(F.formatQty(1250, 'en-US'), '1,250');
 });
+
+// ---------- build 2: the roll and strap hint, and the name shown once ----------
+
+test('the hint above the first row uses the currency\'s own words: roll, bag (UK) or strap', () => {
+  assert.equal(C.packHint('USD'), 'Hold a row to add a roll or strap');
+  assert.equal(C.packHint('CAD'), 'Hold a row to add a roll or strap');
+  assert.equal(C.packHint('EUR'), 'Hold a row to add a roll or strap');
+  assert.equal(C.packHint('AUD'), 'Hold a row to add a roll or strap');
+  assert.equal(C.packHint('GBP'), 'Hold a row to add a bag or strap');
+  assert.equal(C.packHint('MXN'), 'Hold a note row to add a strap', 'no standard peso coin roll, so only notes');
+  for (const code of C.CURRENCY_CODES) assert.ok(!/[!\u2014]/.test(C.packHint(code)));
+});
+
+test('a count\'s name shows under the till\'s only when it differs', () => {
+  assert.equal(H.showCountName('Front register', 'Front register'), false);
+  assert.equal(H.showCountName(' front register ', 'Front register'), false, 'case and end spaces do not count');
+  assert.equal(H.showCountName('', 'Front register'), false);
+  assert.equal(H.showCountName('Front register close', 'Front register'), true);
+  assert.equal(H.showCountName('Sunday close', 'Bar'), true);
+});
