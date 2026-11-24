@@ -2,6 +2,18 @@
 
 Newest first. One entry per commit: date, version/build, what changed and why, and how it was checked.
 
+- 2026-11-24: 1.0.0 build 2, Brian's decisions on the build 2 notes (same branch and PR 4, not merged, no build started).
+  - The keypad sheet now says "Hold a row to add a roll." (or bag, or strap), so it matches the hint above the first row.
+  - CLAUDE.md status: build 1 (PR 1) was built and tested on TestFlight on Nov 24; build 2 is PR 4.
+  - Kept as they are, by Brian's decision: the hint retires for good after the first roll, bag or strap; the design renders and App Store screenshots stay as made; the CSV keeps both the Till and the Name columns.
+  - Checked: `npx tsc --noEmit` clean, `npm test` passing (new: the keypad line says "Hold a row" and no "Long press a row" text is left on screen).
+
+- 2026-11-24: 1.0.0 build 2 (branch claude/cash-build-2, PR, not merged, no build started). From Brian's test of build 1 on his iPhone.
+  - Rolls and straps were hard to find: the only hint was inside the keypad sheet. The count screen now has one quiet line above the first row, in small soft-ink text with the roll glyph: "Hold a row to add a roll or strap" (US dollar, Canadian dollar, euro, Australian dollar), "Hold a row to add a bag or strap" (pound), "Hold a note row to add a strap" (Mexican peso, which has no standard coin roll). It shows until the person adds a roll, bag or strap once, then never again; the flag is the key `hint.packAdded` in the kv table, so no migration (the shipped one is untouched). It is text, not a control: the long press on a row, its 350 ms delay and every 56 pt target are as they were. The wording is src/currencies.ts `packHint`.
+  - A count named the same as its till showed the name twice ("Front register" over "Front register"). The count sheet (PDF and on screen, one layout), the saved count header and the History row now show the count's name only when it differs from the till's, ignoring case and end spaces (src/history.ts `showCountName`). Saved counts are not changed; only how they show.
+  - app.json `ios.buildNumber` 2; version stays 1.0.0.
+  - Checked: `npx tsc --noEmit` clean; `npm test` 75 passing (new: the hint wording per currency, `showCountName`, the sheet printing a same-name count once, the hint wired as a list header that is not a control and retired only by an added roll, bag or strap, the long press unchanged, still one migration, build number 2); `npx expo export --platform ios` bundles; `npx expo config --type introspect` shows 1.0.0 build 2 and `entitlements: {}`. Looked at in the web renders, light and dark: the hint above the first row in dollars and pounds, gone after Add a roll, and a count saved as "Front register" shown once in its header, History and the count sheet.
+
 - 2026-11-23: documentation only, no build (branch claude/extra-listings from main after PR 2 merged; nothing under the EAS path filters).
   - store/metadata.md records what is now in App Store Connect: a section "Extra listings indexed for US search" with the eight extra listings Apple also reads for US searches (Arabic, French, Korean, Portuguese (Brazil), Russian, Vietnamese, Chinese (Simplified), Chinese (Traditional)), each with its own English name, subtitle and keyword field, as a table.
   - CLAUDE.md: the two lines that said nothing leaves the phone now say counts stay on the phone unless the person shares a sheet or a CSV (a Pro purchase record does go to Apple and RevenueCat).
@@ -69,6 +81,11 @@ Newest first. One entry per commit: date, version/build, what changed and why, a
 14. The trial reminder notification a day before the sandbox trial ends; it is the only notification.
 
 ## Noticed, not changed
+
+- Build 2: the VoiceOver hint on a count row still says "Type the number. Long press to add a roll or strap." The keypad line and the hint on screen now say "Hold a row"; VoiceOver users hold with a double tap and hold, so the spoken wording was left as it is.
+- Build 2: the hint retires for good after the first roll, bag or strap in any till or currency; a second till in another currency does not show it again. Kept: Brian's decision, Nov 24.
+- Build 2: the design renders in docs/design/after (01, 02, 03, 05, 18) and the App Store screenshots 1, 2 and 6 were made before the hint and do not show it. The hint only shows until the first roll or strap, so the screenshots are still true to a returning user; re-shoot them if the hint should be in the store images. Kept: Brian's decision, Nov 24.
+- Build 2: the CSV export keeps both the Till and the Name columns even when they match; that is a data file, so it was left as it is. Kept: Brian's decision, Nov 24.
 
 - The roll, bag and strap counts in src/currencies.ts are the usual bank wrappings as I know them; check them with a local bank before launch, especially the Australian rolls and the US half-dollar and dollar-coin rolls. The pound counts were checked against the UK bank paying-in guides on Nov 23 (bands fixed per denomination; bags confirmed). Mexico has no coin roll offered, since I could not settle on one count used everywhere.
 - The Spanish keywords include "caja", which is already in the Spanish subtitle, so it adds nothing there; swapping it frees 4 characters. Kept as briefed.

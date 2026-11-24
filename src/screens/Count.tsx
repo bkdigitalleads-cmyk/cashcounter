@@ -4,7 +4,7 @@ import { useTheme, radius, space, tabular, Theme, TOUCH, type } from '../theme';
 import { useData } from '../data';
 import { useApp } from '../state';
 import type { Denomination } from '../currencies';
-import { CURRENCIES, packWord } from '../currencies';
+import { CURRENCIES, packHint, packWord } from '../currencies';
 import type { Expected, ExpectedMode } from '../count';
 import { countTotals, difference, expectedAmount, isBlank } from '../count';
 import { MAX_QTY, parseQty } from '../money';
@@ -117,6 +117,15 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
             onLong={() => setPack(d)}
           />
         )}
+        ListHeaderComponent={
+          // Until a roll, bag or strap has been added once: one quiet line on how. Not a button; holding a row does it.
+          data.packHintDone ? null : (
+            <View style={styles.hint} accessible accessibilityRole="text">
+              <Glyph name="roll" size={18} color={theme.inkSoft} weight={2} />
+              <Text style={[type.small, { color: theme.inkSoft, flex: 1 }]}>{packHint(draft.currency)}</Text>
+            </View>
+          )
+        }
         ListFooterComponent={
           <View style={{ gap: space.s, marginTop: customRows.length ? space.s : 0 }}>
             {customRows.map((c) => (
@@ -178,7 +187,7 @@ export default function Count({ onSave, onDeposit, onRows, onTills }: { onSave: 
               <View style={styles.keypadHead}>
                 <CashTile theme={theme} d={typingDen} />
                 <Fine theme={theme} style={{ flex: 1 }}>
-                  How many {typingDen.kind === 'note' ? 'notes' : 'coins'}. Long press a row to add a {packWord(draft.currency, typingDen)}.
+                  How many {typingDen.kind === 'note' ? 'notes' : 'coins'}. Hold a row to add a {packWord(draft.currency, typingDen)}.
                 </Fine>
               </View>
             }
@@ -556,6 +565,7 @@ const styles = StyleSheet.create({
   step: { width: TOUCH, height: TOUCH, borderRadius: radius.small, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   qty: { minWidth: 64, height: TOUCH, borderRadius: radius.small, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', paddingHorizontal: space.s },
   otherTile: { width: 56, height: 34, borderRadius: 5, borderWidth: 1.5, borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center' },
+  hint: { flexDirection: 'row', alignItems: 'center', gap: space.s, paddingHorizontal: space.xs, paddingBottom: space.xs },
   rowsLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.s, minHeight: 48 },
   foot: { borderTopWidth: 1, paddingHorizontal: space.l, paddingTop: space.m, paddingBottom: space.m, gap: space.s },
   totalHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },

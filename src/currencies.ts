@@ -212,6 +212,18 @@ export function packWord(code: CurrencyCode, d: Denomination): string {
   return d.kind === 'note' ? 'strap' : CURRENCIES[code].coinPack;
 }
 
+/**
+ * The one quiet line above the first row on the count screen, in the
+ * currency's own words, until the person has added a roll, bag or strap
+ * once: "Hold a row to add a roll or strap" (a bag in the UK). A currency
+ * with no standard coin roll names the notes only.
+ */
+export function packHint(code: CurrencyCode): string {
+  const c = CURRENCIES[code];
+  const coins = c.denominations.some((d) => d.kind === 'coin' && d.pack);
+  return coins ? `Hold a row to add a ${c.coinPack} or strap` : 'Hold a note row to add a strap';
+}
+
 /** Paper size for the count sheet: US Letter in the Americas that use it, A4 everywhere else. */
 export function paperForRegion(region: string | null | undefined): 'letter' | 'a4' {
   return ['US', 'CA', 'MX', 'PR', 'PH', 'CL', 'CO', 'VE', 'GT', 'CR', 'SV', 'PA', 'DO'].includes((region ?? '').toUpperCase()) ? 'letter' : 'a4';

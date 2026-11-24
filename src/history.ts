@@ -44,6 +44,16 @@ export function groupByDay<T extends { day: string; createdAt: number }>(counts:
   return out;
 }
 
+/**
+ * A count's name under its till's name: shown only when it says something
+ * the till's name does not ("Front register" over "Front register" is
+ * shown once). Case and spaces at the ends do not count as a difference.
+ */
+export function showCountName(name: string, tillName: string): boolean {
+  const n = name.trim().toLowerCase();
+  return n.length > 0 && n !== tillName.trim().toLowerCase();
+}
+
 /** "Front register, Nov 22" style default name for a new count. */
 export function defaultCountName(tillName: string): string {
   return `${tillName.trim() || 'Till'} close`;

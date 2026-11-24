@@ -3,7 +3,7 @@ import { SectionList, StyleSheet, Text, View } from 'react-native';
 import { useTheme, radius, space, Theme, type } from '../theme';
 import { useData } from '../data';
 import { useApp } from '../state';
-import { groupByDay } from '../history';
+import { groupByDay, showCountName } from '../history';
 import type { SavedCount } from '../history';
 import { visibleHistory } from '../gates';
 import { formatDayHeading, formatMoney } from '../format';
@@ -87,15 +87,17 @@ function HistoryRow({ theme, c, locale, first, last, onPress }: { theme: Theme; 
       style={[styles.row, { backgroundColor: theme.tile, borderColor: theme.edge }, first && styles.rowFirst, last && styles.rowLast, !first && { borderTopWidth: 0 }]}
       pressedStyle={{ backgroundColor: theme.raised }}
       accessibilityRole="button"
-      accessibilityLabel={`${c.tillName}, ${c.name}, ${money(c.total)}${c.diff == null ? '' : c.diff === 0 ? ', balanced' : c.diff < 0 ? `, short by ${money(-c.diff)}` : `, over by ${money(c.diff)}`}`}
+      accessibilityLabel={`${c.tillName}, ${showCountName(c.name, c.tillName) ? `${c.name}, ` : ''}${money(c.total)}${c.diff == null ? '' : c.diff === 0 ? ', balanced' : c.diff < 0 ? `, short by ${money(-c.diff)}` : `, over by ${money(c.diff)}`}`}
     >
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={[type.strong, { color: theme.ink }]} numberOfLines={1}>
           {c.tillName}
         </Text>
-        <Text style={[type.small, { color: theme.inkSoft }]} numberOfLines={1}>
-          {c.name}
-        </Text>
+        {showCountName(c.name, c.tillName) ? (
+          <Text style={[type.small, { color: theme.inkSoft }]} numberOfLines={1}>
+            {c.name}
+          </Text>
+        ) : null}
       </View>
       <View style={{ alignItems: 'flex-end', gap: 2 }}>
         <Text style={[type.figure, { color: theme.ink }]}>{money(c.total)}</Text>

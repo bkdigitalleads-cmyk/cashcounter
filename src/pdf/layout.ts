@@ -12,6 +12,7 @@
 import type { CurrencyCode } from '../currencies.ts';
 import { CURRENCIES } from '../currencies.ts';
 import type { SavedCount } from '../history.ts';
+import { showCountName } from '../history.ts';
 import { countTotals, diffKind, diffWords, expectedAmount } from '../count.ts';
 import { formatDate, formatMoney, formatQty, formatTime } from '../format.ts';
 
@@ -126,7 +127,8 @@ export function layoutSheet(m: Measure, input: SheetInput): Page {
   text(M, y, fit(m, c.tillName || 'Till', 'bold', 24, right - M - 170), 'bold', 24);
   textR(right, y, formatDate(c.day, locale), 'medium', 14);
   y += 18;
-  text(M, y, fit(m, c.name || ' ', 'regular', 12, right - M - 170), 'regular', 12, SHEET_SOFT);
+  // The count's name under the till's, only when it says something else.
+  if (showCountName(c.name, c.tillName)) text(M, y, fit(m, c.name, 'regular', 12, right - M - 170), 'regular', 12, SHEET_SOFT);
   textR(right, y, `Saved ${formatTime(c.updatedAt, locale)}`, 'regular', 10, SHEET_SOFT);
   y += 14;
   rule(y, 1.4, SHEET_INK);
